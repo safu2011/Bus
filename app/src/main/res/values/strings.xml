@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">BusesTracker</string>
+    <string name="title_activity_maps">Bus</string>
+    <string name="google_maps_key">AIzaSyBmUd1CY2Bt9d1wegD1HdwnEBvYsmVGcpE</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="title_activity_customer_info">CustomerInfoActivity</string>
+    <string name="tab_text_0">Personal Info</string>
+    <string name="tab_text_1">Customers</string>
+    <string name="tab_text_2">Requests</string>
+
+    <string name="user_type">user_type</string>
+    <string name="directions_api">AIzaSyDoDEsuwoTeQO4SfjqCiJJ3vlHHKi3G_2o</string>
+
+    <string-array name="vehical_type">
+        <item>Bus</item>
+        <item>Van</item>
+        <item>Sedan</item>
+        <item>Rikshaw</item>
+        <item>Hatchback</item>
+    </string-array>
+
+    <string-array name="user_type">
+        <item>Consumer</item>
+        <item>Producer</item>
+    </string-array>
+
+    <color name="green">#009688</color>
+
+</resources>

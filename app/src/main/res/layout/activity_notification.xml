@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activities.NotificationActivity"
+    android:clipToPadding="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F6D959"
+        android:orientation="vertical"
+        android:clipToPadding="true"
+        android:weightSum="2">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/notification_icon"
+            android:layout_height="0dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="0.15"
+            android:layout_gravity="center_horizontal"
+            android:text="NOTIFICATION"
+            android:fontFamily="sans-serif-thin"
+            android:textColor="#ffffff"
+            android:textStyle="bold"
+            android:textSize="32dp"/>
+
+        <TextView
+            android:id="@+id/tv_description_notification"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="0.4"
+            android:layout_gravity="center_horizontal"
+            android:fontFamily="sans-serif-light"
+            android:text="The driver is about to reach at your pick up point"
+            android:textColor="#ffffff"
+            android:textSize="18dp"/>
+
+        <Button
+            android:id="@+id/btn_acknowledged_notification"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Acknowledged"
+            android:textAllCaps="false"
+            android:padding="15dp"
+            android:elevation="8dp"
+            android:background="@drawable/bg_edittext"/>
+    </LinearLayout>
+
+</RelativeLayout>

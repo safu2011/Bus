@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    android:id="@+id/ly_consumerInfo"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="#ffffff"
+    >
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:clickable="false"
+        android:focusable="false">
+
+        <ImageView
+            android:id="@+id/imageview_customer"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/user_img"
+            android:padding="10dp"/>
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
+
+        <TextView
+            android:id="@+id/tv_customer_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Customer Name"
+            android:paddingTop="20dp"
+            android:textColor="#000000"/>
+
+        <TextView
+            android:id="@+id/tv_customer_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+923312808014"
+            android:textColor="#000000"
+            android:paddingBottom="18dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#A8A7A7"/>
+    </LinearLayout>
+
+</LinearLayout>

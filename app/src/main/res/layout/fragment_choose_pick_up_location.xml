@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="true"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".FragmentsAddNewDriver.ChoosePickUpLocationFragment">
+
+
+    <LinearLayout
+        android:id="@+id/ll_loading_pick_up_point"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#85000000"
+        android:elevation="50dp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Please Wait"
+            android:textSize="18dp"
+            android:textColor="#ffffff"/>
+
+        <ProgressBar
+            android:id="@+id/progress_bar_pick_up_point"
+            android:background="@drawable/progress"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:foregroundGravity="center" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ly_hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="1dp"
+        android:gravity="center_horizontal"
+        android:padding="10dp"
+        android:background="#40000000"
+        android:visibility="gone">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Move the screen towards the pick up point"
+            android:textColor="#ffffff"
+            android:gravity="center"
+            android:drawableLeft="@drawable/ic_info_white_24dp"
+            android:drawablePadding="6dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:elevation="1dp"
+        android:clipToPadding="true"
+        android:orientation="vertical">
+        <ProgressBar
+            android:id="@+id/pb_wating"
+            android:layout_width="56dp"
+            android:max="100"
+            android:progress="0"
+            android:layout_height="56dp"
+            android:layout_marginBottom="2dp"
+            android:visibility="invisible"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"/>
+        <TextView
+            android:id="@+id/tv_middle_circle"
+            android:layout_width="10dp"
+            android:layout_height="10dp"
+            android:background="@drawable/black_cricle"
+            android:layout_marginBottom="68dp"
+            android:elevation="20dp"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="30dp"
+        android:elevation="1dp"
+        android:gravity="center_horizontal"
+        android:layout_alignParentBottom="true">
+        <Button
+            android:id="@+id/btn_send_req_add_new_driver"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Proceed"
+            android:textColor="#ffffff"
+            android:layout_margin="10dp"
+            android:textAllCaps="false"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="30dp"
+            android:elevation="10dp"
+            android:background="@drawable/bg_start_trip"
+            android:visibility="gone"/>
+
+    </LinearLayout>
+    <fragment
+        android:id="@+id/map_fragment"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".FragmentsAddNewDriver.ChoosePickUpLocationFragment"
+        />
+
+</RelativeLayout>

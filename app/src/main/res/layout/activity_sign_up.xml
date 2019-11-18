@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <LinearLayout
+        android:id="@+id/ll_loading_signup"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#85000000"
+        android:elevation="50dp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Please Wait"
+            android:textSize="18dp"
+            android:textColor="#ffffff"/>
+
+        <ProgressBar
+            android:background="@drawable/progress"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:foregroundGravity="center" />
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/sv_signup_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#66EEEEEE">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/bt_signup_upload_image"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:visibility="gone"
+                    app:civ_border_color="#EEEEEE"
+                    app:civ_border_width="2dp" />
+
+                <ImageButton
+                    android:id="@+id/image_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/bg_add_image_btn"
+                    android:padding="30dp"
+                    android:src="@drawable/ic_add_a_photo_black_24dp" />
+
+
+            </RelativeLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="vertical"
+                android:layout_marginTop="30dp" >
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="4dp"
+                    android:text="Full Name"
+                    android:textAppearance="@style/TextAppearance.AppCompat"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:weightSum="2">
+
+                    <EditText
+                        android:id="@+id/et_signup_first_name"
+                        android:layout_width="0dp"
+                        android:layout_height="45dp"
+                        android:layout_marginLeft="2dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginRight="2dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_edittext"
+                        android:ems="10"
+                        android:focusable="auto"
+                        android:hint="First Name"
+                        android:inputType="textPersonName"
+                        android:paddingLeft="5dp" />
+
+                    <EditText
+                        android:id="@+id/et_signup_last_name"
+                        android:layout_width="0dp"
+                        android:layout_height="45dp"
+                        android:layout_marginLeft="2dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginRight="2dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_edittext"
+                        android:ems="10"
+                        android:hint="Last Name"
+                        android:inputType="textPersonName"
+                        android:paddingLeft="5dp" />
+                </LinearLayout>
+
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginTop="6dp"
+                    android:text="Phone Number"
+                    android:textAppearance="@style/TextAppearance.AppCompat"
+                    android:textStyle="bold" />
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:orientation="horizontal">
+
+                    <com.rilixtech.CountryCodePicker
+                        android:id="@+id/ccp_signup"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_edittext"
+                        android:gravity="center"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        app:ccp_hideNameCode="true"
+                        app:ccp_textSize="18sp" />
+
+                    <EditText
+                        android:id="@+id/et_signup_number"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="3dp"
+                        android:layout_marginLeft="3dp"
+                        android:background="@drawable/bg_edittext"
+                        android:drawablePadding="20dp"
+                        android:hint="1234567890"
+                        android:inputType="numberDecimal"
+                        android:padding="10dp"
+                        android:textSize="18sp"
+                        android:drawableRight="@drawable/ic_local_phone_black_24dp" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginTop="6dp"
+                    android:text="User Type"
+                    android:textAppearance="@style/TextAppearance.AppCompat"
+                    android:textStyle="bold" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_edittext">
+
+                    <Spinner
+                        android:id="@+id/spinner_user_type"
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:layout_marginLeft="2dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginRight="2dp"
+                        android:paddingLeft="5dp" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:id="@+id/ly_producer_related"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    >
+
+                    <TextView
+                        android:id="@+id/textView3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="4dp"
+                        android:layout_marginTop="6dp"
+                        android:text="Duty at Institution"
+                        android:textAppearance="@style/TextAppearance.AppCompat"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/et_signup_duty_at_Institution"
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:layout_marginLeft="2dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginRight="2dp"
+                        android:background="@drawable/bg_edittext"
+                        android:hint="Institution Name"
+                        android:inputType="textPersonName"
+                        android:paddingLeft="5dp"
+                        android:padding="10dp"
+                        android:drawablePadding="20dp"
+                        android:drawableRight="@drawable/ic_school_green_24dp"/>
+
+                    <TextView
+                        android:id="@+id/textView4"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="4dp"
+                        android:layout_marginTop="6dp"
+                        android:text="Vehical Type"
+                        android:textAppearance="@style/TextAppearance.AppCompat"
+                        android:textStyle="bold" />
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_edittext">
+
+                        <Spinner
+                            android:id="@+id/spinner_signup"
+                            android:layout_width="match_parent"
+                            android:layout_height="45dp"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginTop="2dp"
+                            android:layout_marginRight="2dp"
+                            android:paddingLeft="5dp" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="4dp"
+                        android:layout_marginTop="6dp"
+                        android:text="Maximum seating capacity"
+                        android:textAppearance="@style/TextAppearance.AppCompat"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/et_signup_seating_capacity"
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:layout_marginLeft="2dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginRight="2dp"
+                        android:background="@drawable/bg_edittext"
+                        android:hint="Seating capacity"
+                        android:inputType="number"
+                        android:paddingLeft="5dp"
+                        android:padding="10dp"
+                        android:drawablePadding="20dp"
+                        android:drawableRight="@drawable/ic_directions_car_yellow_24dp"/>
+                </LinearLayout>
+                <Button
+                    android:id="@+id/btn_proceed_signup"
+                    android:layout_width="300dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="70dp"
+                    android:background="@drawable/sign_up_bg"
+                    android:elevation="10dp"
+                    android:text="Proceed"
+                    android:textColor="#ffffff"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:orientation="horizontal"></LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+</RelativeLayout>

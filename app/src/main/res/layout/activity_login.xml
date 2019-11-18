@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".Activities.LoginActivity"
+    android:background="#66EEEEEE">
+    <LinearLayout
+        android:id="@+id/ll_loading_loging"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#85000000"
+        android:elevation="50dp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Please Wait"
+            android:textSize="18dp"
+            android:textColor="#ffffff"/>
+
+        <ProgressBar
+            android:id="@+id/progress_bar_main_loging"
+            android:background="@drawable/progress"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:foregroundGravity="center" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:weightSum="1">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.35"
+                android:gravity="center">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-smallcaps"
+                    android:text="Sign In"
+                    android:textColor="#000000"
+                    android:textSize="30dp" />
+            </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.55"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingTop="16dp">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="30dp"
+                android:layout_marginRight="30dp"
+                android:layout_marginTop="6dp"
+                android:text="User Type"
+                android:textAppearance="@style/TextAppearance.AppCompat"
+                android:textStyle="bold" />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/tv_bg"
+                android:layout_marginLeft="30dp"
+                android:layout_marginRight="30dp"
+                android:layout_marginBottom="8dp">
+
+                <Spinner
+                    android:id="@+id/spinner_login_user_type"
+                    android:layout_width="match_parent"
+                    android:layout_height="45dp"
+                    android:layout_marginLeft="2dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginRight="2dp"
+                    android:paddingLeft="5dp" />
+            </FrameLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginLeft="30dp"
+                android:layout_marginRight="30dp">
+
+                <com.rilixtech.CountryCodePicker
+                    android:id="@+id/ccp_login"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/tv_bg"
+                    app:ccp_hideNameCode="true"
+                    android:gravity="center"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:paddingLeft="5dp"
+                    app:ccp_textSize="18sp" />
+
+                <EditText
+                    android:id="@+id/tv_phoneNumber"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:hint="123456789"
+                    android:padding="10dp"
+                    android:inputType="phone"
+                    android:background="@drawable/tv_bg"
+                    android:drawableRight="@drawable/ic_local_phone_black_24dp"
+                    />
+            </LinearLayout>
+
+
+            <Button
+                android:id="@+id/btn_sign_in"
+                android:layout_width="200dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/login_bg"
+                android:fontFamily="sans-serif-condensed-medium"
+                android:text="Sign In"
+                android:textColor="#ffffff" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.1"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:id="@+id/tv_login_create_account"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Create Account"
+                android:textSize="16dp"/>
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>

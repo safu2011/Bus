@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="true"
+    tools:context=".Activities.ConsumerActivity">
+
+    <LinearLayout
+        android:id="@+id/ll_loading_consumer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#85000000"
+        android:elevation="50dp"
+        android:gravity="center"
+        android:visibility="gone"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Please Wait"
+            android:textSize="18dp"
+            android:textColor="#ffffff"/>
+
+        <ProgressBar
+            android:id="@+id/progress_bar_main"
+            android:background="@drawable/progress"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:foregroundGravity="center" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:weightSum="2"
+                android:clipToPadding="true">
+                <Button
+                    android:id="@+id/btn_drivers_info"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="200dp"
+                    android:text="Drivers Added"
+                    android:fontFamily="sans-serif-light"
+                    android:textSize="26sp"
+                    android:textColor="#ffffff"
+                    android:gravity="center"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginLeft="10dp"
+                    android:drawableTop="@drawable/ic_supervisor_account_white_24dp"
+                    android:background="@drawable/check_driver_info_bg"
+                    android:elevation="8dp"
+                    android:textAllCaps="false"
+                    />
+                <Button
+                    android:id="@+id/btn_add_drivers"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="200dp"
+                    android:text="Add Driver"
+                    android:textColor="#ffffff"
+                    android:fontFamily="sans-serif-light"
+                    android:textSize="26sp"
+                    android:layout_marginRight="10dp"
+                    android:elevation="8dp"
+                    android:drawableTop="@drawable/ic_person_white_black_24dp"
+                    android:background="@drawable/add_driver_bg"
+                    android:textAllCaps="false"/>
+            </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:weightSum="2"
+            android:clipToPadding="true"
+            android:layout_marginTop="10dp">
+            <Button
+                android:id="@+id/btn_track_driver"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="200dp"
+                android:text="Track Driver"
+                android:fontFamily="sans-serif-light"
+                android:textSize="26sp"
+                android:textColor="#ffffff"
+                android:gravity="center"
+                android:layout_marginRight="20dp"
+                android:layout_marginLeft="10dp"
+                android:drawableTop="@drawable/ic_directions_car_white_24dp"
+                android:background="@drawable/track_driver_bg"
+                android:elevation="8dp"
+                android:textAllCaps="false"
+                />
+            <Button
+                android:id="@+id/btn_leave"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="200dp"
+                android:text="Apply Leave"
+                android:textColor="#ffffff"
+                android:fontFamily="sans-serif-light"
+                android:textSize="26sp"
+                android:layout_marginRight="10dp"
+                android:elevation="8dp"
+                android:drawableTop="@drawable/ic_leave_24dp"
+                android:background="@drawable/leave_customer_bg"
+                android:textAllCaps="false"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:clipToPadding="true"
+            android:layout_marginTop="10dp">
+            <Button
+                android:id="@+id/btn_logout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Log out"
+                android:textColor="#ffffff"
+                android:fontFamily="sans-serif-light"
+                android:textSize="26sp"
+                android:layout_marginRight="10dp"
+                android:paddingBottom="10dp"
+                android:paddingTop="8dp"
+                android:layout_marginLeft="10dp"
+                android:elevation="8dp"
+                android:drawableTop="@drawable/ic_logout_white_24dp"
+                android:background="@drawable/logout_customer_bg"
+                android:textAllCaps="false"/>
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>
