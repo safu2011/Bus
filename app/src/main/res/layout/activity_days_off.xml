@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="Activities.DaysOffActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:theme="@style/AppTheme.AppBarOverlay">
+
+            <TextView
+                android:id="@+id/title_driversInfo_Leave"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:minHeight="?actionBarSize"
+                android:padding="@dimen/appbar_padding"
+                android:text="Leave Dates"
+                android:textAppearance="@style/TextAppearance.Widget.AppCompat.Toolbar.Title" />
+
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <com.applandeo.materialcalendarview.CalendarView
+            android:id="@+id/cv_days_off"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:soundEffectsEnabled="true"
+            app:eventsEnabled="true"
+            app:headerColor="@color/colorPrimary"
+            app:selectionColor="@color/colorAccent"
+            app:todayLabelColor="#2196F3" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/bt_days_off_edit_days"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:background="@drawable/bg_start_trip"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:text="Edit Leave Dates"
+                android:textAllCaps="false"
+                android:textColor="#fff" />
+
+            <Button
+                android:id="@+id/bt_days_off_reset_calendar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:background="@drawable/bg_personal_info_dp"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:text="Reset"
+                android:textColor="#fff" />
+
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>
