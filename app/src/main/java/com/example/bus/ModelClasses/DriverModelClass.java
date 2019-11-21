@@ -1,9 +1,9 @@
 package com.example.bus.ModelClasses;
 
-import java.util.ArrayList;
 
 public class DriverModelClass {
     private String id, name, number, dutyAt, vehicleType;
+    private String arrivalTime = "3 min";
     private int vehicleCapacity, seatsAvailable;
 
 
@@ -40,6 +40,12 @@ public class DriverModelClass {
     public int getVehicleCapacity(){ return vehicleCapacity;}
 
     public int getSeatsAvailable(){return seatsAvailable;}
+
+    public void setArrivalTime(String arrivalTime){
+        this.arrivalTime = arrivalTime;
+    }
+
+    public String getArrivalTime(){return arrivalTime;}
 
 
 

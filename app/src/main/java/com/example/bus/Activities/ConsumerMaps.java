@@ -34,6 +34,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.bus.ModelClasses.CustomerModelClass;
 import com.example.bus.ModelClasses.DriverModelClass;
 import com.example.bus.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -51,6 +52,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import static com.example.bus.Activities.ProducerMapsActivity.PERMISSION_REQUEST_CODE_LOCATION;
@@ -62,9 +64,11 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
     private LatLng customerLatlang;
     private LocationManager locationManager;
     private ArrayList<Marker> driversMarkersList;
+    private ArrayList<DriverModelClass> driversList;
     private LinearLayout loadingScreen;
     private RecyclerView recyclerView;
     private RecyclerView.Adapter<ViewHolderRtCustomerMaps> adapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +85,7 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         getlocation();
         driversMarkersList = new ArrayList<>();
+        driversList = new ArrayList<>();
 
         findViewById(R.id.my_customer_location_btn).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -105,6 +110,8 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
+        InfoWindowAdapter infoWindowAdapter = new InfoWindowAdapter();
+        mMap.setInfoWindowAdapter(infoWindowAdapter);
         if(customerLatlang!=null) {
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(customerLatlang, 14f));
             customerMarker = mMap.addMarker(new MarkerOptions()
@@ -240,9 +247,12 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 if(dataSnapshot.child("IsActive").getValue(Boolean.class) == true){
                                     String driverName = dataSnapshot.child("Name").getValue(String.class);
+                                    String dutyat = dataSnapshot.child("Institute Name").getValue(String.class);
                                     double driverLatitude = dataSnapshot.child("Latitude").getValue(Double.class);
                                     double driverLongitude = dataSnapshot.child("Longitude").getValue(Double.class);
                                     driversMarkersList.add(getMarker(driverName,driverLatitude,driverLongitude));
+                                    driversList.add(new DriverModelClass(ds.getKey(),driverName,"null",dutyat,"null",0,0));
+                                    getArrivalTime(ds.getKey());
                                     adapter.notifyDataSetChanged();
                                 }
                                 hideLoadingScreen();
@@ -288,6 +298,81 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
                         150,
                         false))));
     }
+
+    private void getArrivalTime(String driverId){
+        DatabaseReference arrivalTimeRef = FirebaseDatabase.getInstance().getReference("Producers List").child(driverId);
+        arrivalTimeRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    double avgSpeed = 30;
+                    if (dataSnapshot.child("Average speed").exists()){
+                        avgSpeed = dataSnapshot.child("Average speed").getValue(double.class);
+                    }
+                    double driverLati = dataSnapshot.child("Latitude").getValue(double.class);
+                    double driverLongi = dataSnapshot.child("Longitude").getValue(double.class);
+
+                    for(DriverModelClass driver : driversList){
+                        if(driver.getId().equals(driverId))
+                            driver.setArrivalTime(calculateArrivalTime(new LatLng(driverLati,driverLongi),customerLatlang,avgSpeed));
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private String calculateArrivalTime(LatLng customerlatLng, LatLng myLatlang, double avgSpeed) {
+        Location mylocation = new Location("");
+        mylocation.setLatitude(myLatlang.latitude);
+        mylocation.setLongitude(myLatlang.longitude);
+
+        Location targetLoaction = new Location("");
+        targetLoaction.setLatitude(customerlatLng.latitude);
+        targetLoaction.setLongitude(customerlatLng.longitude);
+
+        double distance = mylocation.distanceTo(targetLoaction);
+
+        double distanceInKilometer = distance * 0.001;
+        double estimatedTimeInHours = distanceInKilometer / avgSpeed;
+        double estimatedTimeInMinitues = estimatedTimeInHours * 60;
+
+        if (estimatedTimeInMinitues < 1) {
+           return new DecimalFormat("##").format(estimatedTimeInMinitues * 60) + " sec";
+        } else if (estimatedTimeInMinitues > 60) {
+            return new DecimalFormat("##.#").format(estimatedTimeInMinitues / 60) + " hour";
+        } else {
+            return new DecimalFormat("##.#").format(estimatedTimeInMinitues) + " min";
+        }
+    }
+
+
+//    public String calculateEstimatedTimeInMin(LatLng myLatLng, LatLng driver) {
+//        Location mylocation = new Location("");
+//        mylocation.setLatitude(myLatLng.latitude);
+//        mylocation.setLongitude(myLatLng.longitude);
+//
+//        Location targetlocation = new Location("");
+//        targetlocation.setLatitude(driver.latitude);
+//        targetlocation.setLongitude(driver.longitude);
+//
+//        double distanceInMeters = mylocation.distanceTo(targetlocation); // distance in meters
+//
+//        int speedMetersPerMinute = 500; // 30kph average speed at start
+//        double estematedDriveTimeInMinutes = distanceInMeters / speedMetersPerMinute;
+//        if (estematedDriveTimeInMinutes < 1) {
+//            return  new DecimalFormat("##.#").format(estematedDriveTimeInMinutes * 60) + " sec";
+//        } else if (estematedDriveTimeInMinutes > 60) {
+//            return  new DecimalFormat("##.#").format(estematedDriveTimeInMinutes / 60) + " hour";
+//        } else {
+//            return new DecimalFormat("##.#").format(estematedDriveTimeInMinutes) + " min";
+//        }
+//
+//    }
 
 
     private void setRecyclerView(){
@@ -340,5 +425,32 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
 
         }
 
+    }
+
+    public class InfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
+        private final View markerItemView;
+        public InfoWindowAdapter() {
+            markerItemView = ((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.marker_info_view_blueprint, null);  // 1
+        }
+        @Override
+        public View getInfoWindow(Marker marker) { // 2
+            for(int i=0 ;i<driversList.size(); i++){
+                if(marker.getTitle().equals(driversList.get(i).getName())){
+                    getArrivalTime(driversList.get(i).getId());
+                    TextView tvDriverName = markerItemView.findViewById(R.id.tv_marker_info_driver_name);
+                    TextView tvDriverInstitute = markerItemView.findViewById(R.id.tv_marker_info_driver_duty_at);
+                    TextView tvDriverArrivingTime = markerItemView.findViewById(R.id.tv_marker_info_driver_arriving_time);
+
+                    tvDriverName.setText("Name : "+driversList.get(i).getName());
+                    tvDriverInstitute.setText("Institute : "+driversList.get(i).getDutyAt());
+                    tvDriverArrivingTime.setText("Arrival Time : "+driversList.get(i).getArrivalTime());
+                }
+            }
+            return markerItemView;  // 4
+        }
+        @Override
+        public View getInfoContents(Marker marker) {
+            return null;
+        }
     }
 }

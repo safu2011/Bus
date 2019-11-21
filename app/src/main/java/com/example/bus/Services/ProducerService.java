@@ -57,6 +57,7 @@ public class ProducerService extends Service implements LocationListener {
     private LocationManager locationManager;
     private ConnectivityManager CONNECTIVITY_MANAGER;
     private TextToSpeech tts;
+    private double avgSpeed = 0.0;
     private boolean isTtsAvailable = false;
 
 
@@ -185,12 +186,12 @@ public class ProducerService extends Service implements LocationListener {
     }
 
 
-    private void setAverageEsstematedTime(double distanceInMeters) {
+    private String setAverageEsstematedTime(double distanceInMeters) {
         double totalSpeed = 0;
         for (Double value : previousSpeedList) {
             totalSpeed = value + totalSpeed;
         }
-        double avgSpeed = totalSpeed / previousSpeedList.size();
+        avgSpeed = totalSpeed / previousSpeedList.size();
         double distanceInKilometer = distanceInMeters * 0.001;
         double estimatedTimeInHours = distanceInKilometer / avgSpeed;
         double estimatedTimeInMinitues = estimatedTimeInHours * 60;
@@ -204,6 +205,9 @@ public class ProducerService extends Service implements LocationListener {
         }
         sendBMtoUpdateUserValues(finalEstimatedTime, new DecimalFormat("###.#").format(avgSpeed) + " kmh");
         currentTargetedCustomer.setCustomerEstimatedArivalTime(finalEstimatedTime);
+        return finalEstimatedTime;
+
+        //
 
     }
 
@@ -240,11 +244,12 @@ public class ProducerService extends Service implements LocationListener {
                 indexOfSpeedList++;
             }
         }
-
-        if ((currentTargetedCustomer != null) && (previousSpeedList.size() == 20)) {
-            setAverageEsstematedTime(distanceToTargetCustomer);
-        }
+        String finalEstimatedTime = "calculating...";
         String finalDistanceToTargetCustomer;
+        if ((currentTargetedCustomer != null) && (previousSpeedList.size() == 20)) {
+            finalEstimatedTime = setAverageEsstematedTime(distanceToTargetCustomer);
+        }
+
         if (distanceToTargetCustomer <= 1000.0) {
             finalDistanceToTargetCustomer = new DecimalFormat("##").format(distanceToTargetCustomer) + " meters";
         } else {
@@ -252,6 +257,12 @@ public class ProducerService extends Service implements LocationListener {
         }
         setBMtoDistanceValue(finalDistanceToTargetCustomer);
         currentTargetedCustomer.setCustomerDistanceRemaining(getDistanceFromProducer(myNewLocaion, currentTargetedCustomer));
+
+//        if(isNetworkAvailable()) {
+//            DatabaseReference arrivalTimeRef = FirebaseDatabase.getInstance().getReference("Consumers List").child(currentTargetedCustomer.getId()).child("Arrival Time").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+//            arrivalTimeRef.child("Arriving in").setValue(finalEstimatedTime);
+//            arrivalTimeRef.child("Distance").setValue(finalDistanceToTargetCustomer);
+//        }
 
         myPreviousTime = currentTimeInMillis;
     }
@@ -338,6 +349,7 @@ public class ProducerService extends Service implements LocationListener {
         } else {
             finalDistanceToTargetCustomer = new DecimalFormat("##.##").format(distanceInMeters * 0.001) + " km";
         }
+
         setBMtoFirstEstimatedTimeValue(finalEstimatedTime);
         setBMtoDistanceValue(finalDistanceToTargetCustomer);
     }
@@ -376,6 +388,7 @@ public class ProducerService extends Service implements LocationListener {
         Intent intent = new Intent("update estimated time value");
         intent.putExtra("estimated time", estimatedTimeValue);
         sendBroadcast(intent);
+
     }
 
     private void setBMtoDistanceValue(String distanceToTarget) {
@@ -389,6 +402,7 @@ public class ProducerService extends Service implements LocationListener {
         if (networkInfo != null && networkInfo.isConnected() && FirebaseAuth.getInstance().getCurrentUser().getUid() != null) {
             FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Latitude").setValue(myLatlang.latitude);
             FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Longitude").setValue(myLatlang.longitude);
+            FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Average speed").setValue(avgSpeed);
             Log.d("mylog", "updateLocationInDatabase: yes worked");
         }
     }
