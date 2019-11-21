@@ -142,30 +142,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-condensed-medium"
-                    android:text="Send Leave Request"
+                    android:text="Leaves Information"
                     android:textColor="#ffffff"
                     />
             </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/ly_leave_request_undo_send"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_customer_maps_drivers_list"
-                android:orientation="horizontal"
-                android:padding="8dp"
-                android:layout_marginTop="6dp"
-                android:gravity="center"
-                android:visibility="gone">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-condensed-medium"
-                    android:text="Cancel Leave"
-                    android:textColor="#ffffff"
-                    />
-            </LinearLayout>
         </RelativeLayout>
     </LinearLayout>
 

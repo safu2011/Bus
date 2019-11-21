@@ -4,6 +4,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 public class CustomerModelClass implements Serializable {
     private String name;
@@ -16,6 +17,7 @@ public class CustomerModelClass implements Serializable {
     private String phoneNumber;
     private PolylineOptions polylineOptions;
     private Boolean isOnLeave = false;
+    private ArrayList<String> LeaveDates = new ArrayList<>();
     public CustomerModelClass(String id, String name, String phoneNumber, String latitude, String longitude, String databaseReference,Boolean isOnLeave) {
         this.id = id;
         this.name = name;
@@ -96,5 +98,11 @@ public class CustomerModelClass implements Serializable {
         isOnLeave = value;
     }
 
+    public void setLeaveDates (ArrayList<String> datesList){
+        LeaveDates = datesList;
+    }
 
+    public ArrayList<String> getLeaveDats(){
+        return LeaveDates;
+    }
 }

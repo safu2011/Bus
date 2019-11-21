@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -35,14 +36,12 @@ public class ConsumerLeaveActivity extends AppCompatActivity {
     private ArrayList<DriverModelClass> driversList;
     private LinearLayout loadingScreen;
     private RecyclerView.Adapter<ViewHolderRt> adapter;
-    private ArrayList<String> isAppliedForLeave;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_consumer_leave);
         driversList = new ArrayList<>();
-        isAppliedForLeave = new ArrayList<>();
         recyclerView();
         showLoadingScreen();
 
@@ -63,16 +62,6 @@ public class ConsumerLeaveActivity extends AppCompatActivity {
                                     String phoneNumber = dataSnapshot.child("Phone Number").getValue(String.class);
                                     String dutyAt = dataSnapshot.child("Institute Name").getValue(String.class);
                                     String vehicleType = dataSnapshot.child("Vehical Type").getValue(String.class);
-                                    String isOnLeave = "false";
-
-                                    if(dataSnapshot.child("Customers").child(FirebaseAuth.getInstance().getUid()).child("Is on leave").exists()){
-                                        isOnLeave = dataSnapshot.child("Customers").child(FirebaseAuth.getInstance().getUid()).child("Is on leave").getValue(String.class);
-                                    }
-
-                                    if(isOnLeave.equals("true")){
-                                        isAppliedForLeave.add("true");
-                                    }else
-                                        isAppliedForLeave.add("false");
 
                                     driversList.add(new DriverModelClass(id, name, phoneNumber, dutyAt, vehicleType,0,0));
 
@@ -117,52 +106,22 @@ public class ConsumerLeaveActivity extends AppCompatActivity {
                 viewHolderRt.driver_name.setText(driversList.get(i).getName());
                 viewHolderRt.number.setText(driversList.get(i).getNumber());
                 viewHolderRt.dutyAt.setText(driversList.get(i).getDutyAt());
-                viewHolderRt.vehicalType.setText(driversList.get(i).getVehicleType());
+                viewHolderRt.vehicleType.setText(driversList.get(i).getVehicleType());
 
-                if(i < isAppliedForLeave.size() && isAppliedForLeave.get(i).equals("true")){
-                    viewHolderRt.ly_send_request.setVisibility(View.GONE);
-                    viewHolderRt.ly_undo_request.setVisibility(View.VISIBLE);
-                }else{
-                    viewHolderRt.ly_undo_request.setVisibility(View.GONE);
-                    viewHolderRt.ly_send_request.setVisibility(View.VISIBLE);
-                }
 
                 viewHolderRt.ly_send_request.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         if(isNetworkAvailable()){
-                            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Producers List").child(driversList.get(i).getId()).child("Customers").child(FirebaseAuth.getInstance().getUid()).child("Is on leave");
-                            reference.setValue("true").addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    viewHolderRt.ly_send_request.setVisibility(View.GONE);
-                                    viewHolderRt.ly_undo_request.setVisibility(View.VISIBLE);
-                                }
-                            });
+                            Intent intent = new Intent(ConsumerLeaveActivity.this, DaysOffActivity.class);
+                            intent.putExtra("DriverId",driversList.get(i).getId());
+                            startActivity(intent);
                         } else {
                             Toast.makeText(ConsumerLeaveActivity.this,"Check Internet Connection",Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
 
-                viewHolderRt.ly_undo_request.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if(isNetworkAvailable()){
-                            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Producers List").child(driversList.get(i).getId()).child("Customers").child(FirebaseAuth.getInstance().getUid()).child("Is on leave");
-                            reference.setValue("false").addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    viewHolderRt.ly_undo_request.setVisibility(View.GONE);
-                                    viewHolderRt.ly_send_request.setVisibility(View.VISIBLE);
-                                }
-                            });
-                        }
-                        else {
-                            Toast.makeText(ConsumerLeaveActivity.this,"Check Internet Connection",Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
             }
 
             @Override
@@ -191,17 +150,16 @@ public class ConsumerLeaveActivity extends AppCompatActivity {
     }
 
     private class ViewHolderRt extends RecyclerView.ViewHolder {
-        TextView driver_name, number, dutyAt, vehicalType;
-        LinearLayout ly_send_request, ly_undo_request;
+        TextView driver_name, number, dutyAt, vehicleType;
+        LinearLayout ly_send_request;
 
         public ViewHolderRt(View itemView) {
             super(itemView);
             driver_name = itemView.findViewById(R.id.tv_leave_driver_name);
             number = itemView.findViewById(R.id.tv_leave_driver_number);
             dutyAt = itemView.findViewById(R.id.tv_driver_duty_at_leave);
-            vehicalType = itemView.findViewById(R.id.tv_driver_leave_vehical);
+            vehicleType = itemView.findViewById(R.id.tv_driver_leave_vehical);
             ly_send_request = itemView.findViewById(R.id.ly_leave_request_send);
-            ly_undo_request = itemView.findViewById(R.id.ly_leave_request_undo_send);
         }
 
     }

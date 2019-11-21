@@ -30,6 +30,9 @@
             android:name=".Activities.ConsumerMaps"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
+            android:name=".Activities.DaysOffActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
             android:name=".Activities.DriversInfoActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".Activities.ViewPickUpPointLocation" />

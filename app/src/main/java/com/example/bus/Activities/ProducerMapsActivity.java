@@ -21,16 +21,21 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
+
 import androidx.annotation.NonNull;
 
+import com.applandeo.materialcalendarview.EventDay;
 import com.example.bus.directionhelpers.FetchURL;
 import com.example.bus.directionhelpers.TaskLoadedCallback;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.navigation.NavigationView;
+
 import androidx.core.app.ActivityCompat;
+
 import android.os.Bundle;
+
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
@@ -65,6 +70,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -88,6 +95,7 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
     private View nestedScrollView;
     private Button btnMyLocation, btnStartTtip, btnStopTrip, btnStartNavigation;
     private LinearLayout lyNoInternet;
+    private String currentDate;
 
 
     private LinearLayout loadingScreen;
@@ -98,15 +106,16 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
     @Override
     protected void onResume() {
         super.onResume();
-        if(!isNetworkAvailable()){
+        if (!isNetworkAvailable()) {
             lyNoInternet = findViewById(R.id.ly_no_internet);
             lyNoInternet.setVisibility(View.VISIBLE);
         }
         if (currentTargetedCustomer != null) {
             updateMarkerIcon();
+            setLeaveListeners();
             btnStartTtip.setVisibility(View.GONE);
-        }else{
-            if(isNetworkAvailable())
+        } else {
+            if (isNetworkAvailable())
                 FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("IsActive").setValue(false);
         }
         IntentFilter intentFilters = new IntentFilter();
@@ -147,12 +156,12 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setCompassEnabled(false);
-        if(myLatlang!=null){
+        if (myLatlang != null) {
             myMarker = mMap.addMarker(new MarkerOptions()
                     .position(myLatlang)
                     .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_self))));
             updateLocationInDatabase();
-        }else if(getLocationFromDatabase() != null){
+        } else if (getLocationFromDatabase() != null) {
             myLatlang = getLocationFromDatabase();
             myMarker = mMap.addMarker(new MarkerOptions()
                     .position(myLatlang)
@@ -166,7 +175,7 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
         } else {
             mMap.getUiSettings().setZoomControlsEnabled(false);
             currentPolyline = mMap.addPolyline(currentTargetedCustomer.getCustomerPolyline());
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLatlang.latitude-0.00008,myLatlang.longitude), 22f));
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLatlang.latitude - 0.00008, myLatlang.longitude), 22f));
         }
 
         // drawing markers on Map if not drawn before
@@ -187,16 +196,15 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
         }
 
 
-
     }
 
     @Override
     public void onLocationChanged(Location location) {
         myLatlang = new LatLng(location.getLatitude(), location.getLongitude());
-        if(myMarker!=null && mMap!=null) {
+        if (myMarker != null && mMap != null) {
             myMarker.setPosition(myLatlang);
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myLatlang, 14f));
-        }else if(myMarker == null){
+        } else if (myMarker == null) {
             myMarker = mMap.addMarker(new MarkerOptions()
                     .position(myLatlang)
                     .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_self))));
@@ -238,9 +246,9 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
         final DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if(mBottomSheetBehaviour.getState() != BottomSheetBehavior.STATE_COLLAPSED){
+        } else if (mBottomSheetBehaviour.getState() != BottomSheetBehavior.STATE_COLLAPSED) {
             mBottomSheetBehaviour.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        }else{
+        } else {
             super.onBackPressed();
         }
     }
@@ -258,21 +266,21 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
         } else if (id == R.id.nav_stopService) {
             stopTrip();
         } else if (id == R.id.nav_sign_out) {
-            if(currentTargetedCustomer != null){
-                if(isNetworkAvailable()) {
+            if (currentTargetedCustomer != null) {
+                if (isNetworkAvailable()) {
                     FirebaseDatabase.getInstance().getReference("Consumers List").child(currentTargetedCustomer.getId()).child("Arrived").setValue("True");
                     //ask to quit trip first
                 }
-            }else{
+            } else {
 
-                if(isNetworkAvailable()) {
+                if (isNetworkAvailable()) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     builder.setMessage("Are you sure ?")
                             .setTitle("Sign Out")
                             .setPositiveButton("Yes, Sign out.", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
-                                    if(isNetworkAvailable()) {
+                                    if (isNetworkAvailable()) {
                                         FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("IsActive").setValue(false);
                                         Intent intent = new Intent(ProducerMapsActivity.this, ProducerService.class);
                                         stopService(intent);
@@ -328,6 +336,7 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
         btnStartNavigation = findViewById(R.id.start_navigation_btn);
         lyNoInternet = findViewById(R.id.ly_no_internet);
 
+        currentDate = getCurrentDate();
         //if app was not running already
         getCustomersInfo();
         if (currentTargetedCustomer != null) {
@@ -391,36 +400,51 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
 
     }
 
-    private void getCustomersInfo(){
+    private void getCustomersInfo() {
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         if (customersList == null && networkInfo != null && networkInfo.isConnected()) {
             customersList = new ArrayList<>();
             if (networkInfo != null && networkInfo.isConnected()) {
                 myRef = FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-                DatabaseReference myCustomersReference = myRef.child("Customers");
                 showLoadingScreen();
                 setNewRequestsListeners();
-                myCustomersReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                myRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        for (DataSnapshot ds : dataSnapshot.getChildren()) {
+
+                        for (DataSnapshot ds : dataSnapshot.child("Customers").getChildren()) {
                             String customerId = ds.getKey();
                             String customerName = ds.child("Name").getValue(String.class);
                             String customerPhoneNumber = ds.child("Phone Number").getValue(String.class);
                             String latti = ds.child("Pick up point latitude").getValue(Double.class).toString();
                             String longi = ds.child("Pick up point longitude").getValue(Double.class).toString();
-                            String isOnLeave = "false";
 
-                            if(ds.child("Is on leave").exists()){
-                                isOnLeave = ds.child("Is on leave").getValue(String.class);
-                            }
+                            //these two lines
+                            CustomerModelClass currentCustomer = new CustomerModelClass(customerId, customerName, customerPhoneNumber, latti, longi, ds.getRef() + "", false);
+                            customersList.add(currentCustomer);
 
-                            if(isOnLeave.equals("true")){
-                                customersList.add(new CustomerModelClass(customerId, customerName, customerPhoneNumber, latti, longi, ds.getRef() + "",true));
-                            }else {
-                                customersList.add(new CustomerModelClass(customerId, customerName, customerPhoneNumber, latti, longi, ds.getRef() + "",false));
-                            }
+//                            if (dataSnapshot.child("Leave Dates").child(customerId).exists()) {
+//                                ArrayList<String> daysOffList = new ArrayList<>();
+//                                for (DataSnapshot dayOffTimeSnap : dataSnapshot.child("Leave Dates").child(customerId).getChildren()) {
+//                                    String date = dayOffTimeSnap.getKey();
+//                                    daysOffList.add(date);
+//                                }
+//                                if (checkIfOnLeave(daysOffList)) {
+//                                    CustomerModelClass currentCustomer = new CustomerModelClass(customerId, customerName, customerPhoneNumber, latti, longi, ds.getRef() + "", true);
+//                                    currentCustomer.setLeaveDates(daysOffList);
+//                                    customersList.add(currentCustomer);
+//
+//                                } else {
+//                                    CustomerModelClass currentCustomer = new CustomerModelClass(customerId, customerName, customerPhoneNumber, latti, longi, ds.getRef() + "", false);
+//                                    currentCustomer.setLeaveDates(daysOffList);
+//                                    customersList.add(currentCustomer);
+//                                }
+//                            } else {
+//                                CustomerModelClass currentCustomer = new CustomerModelClass(customerId, customerName, customerPhoneNumber, latti, longi, ds.getRef() + "", false);
+//                                customersList.add(currentCustomer);
+//                            }
                         }
+
                         // drawing markers on Map if not drawn before
                         if (customersMarkerList.size() == 0) {
                             for (CustomerModelClass customer : customersList) {
@@ -430,20 +454,21 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
                                             .title(customer.getCustomerName())
                                             .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_target_consumer)))));
                                 } else {
-                                    if(customer.getIsOnLeave()){
-                                        customersMarkerList.add(mMap.addMarker(new MarkerOptions()
-                                                .position(new LatLng(customer.getCustomerLatitude(), customer.getCustomerLongitude()))
-                                                .title(customer.getCustomerName()+" (On Leave)")
-                                                .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_consumer_leave)))));
-                                    } else{
+//                                    if (customer.getIsOnLeave()) {
+//                                        customersMarkerList.add(mMap.addMarker(new MarkerOptions()
+//                                                .position(new LatLng(customer.getCustomerLatitude(), customer.getCustomerLongitude()))
+//                                                .title(customer.getCustomerName() + " (On Leave)")
+//                                                .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_consumer_leave)))));
+//                                    } else {
                                         customersMarkerList.add(mMap.addMarker(new MarkerOptions()
                                                 .position(new LatLng(customer.getCustomerLatitude(), customer.getCustomerLongitude()))
                                                 .title(customer.getCustomerName())
                                                 .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_consumer)))));
-                                    }
+                                    //}
                                 }
                             }
                         }
+                        setLeaveListeners();
                         hideLoadingScreen();
                     }
 
@@ -485,6 +510,57 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
 
     }
 
+    private void setLeaveListeners(){
+        DatabaseReference leaveRef = FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Leave Dates");
+        leaveRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                for(int i =0 ;i<customersMarkerList.size() ;i++){
+                    customersMarkerList.get(i).setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_consumer)));
+                    customersList.get(i).setIsOnLeave(false);
+                    customersMarkerList.get(i).setTitle(customersList.get(i).getCustomerName());
+                }
+
+                if (dataSnapshot.exists()) {
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        String customerId = ds.getKey();
+                        ArrayList<String> daysOffList = new ArrayList<>();
+                        for (DataSnapshot dayOffTimeSnap : dataSnapshot.child(customerId).getChildren()) {
+                            String date = dayOffTimeSnap.getKey();
+                            daysOffList.add(date);
+                        }
+
+                        for (int i = 0; i < customersList.size(); i++) {
+                            if (customersList.get(i).getId().equals(customerId)) {
+                                customersList.get(i).setLeaveDates(daysOffList);
+                                if (checkIfOnLeave(daysOffList)) {
+                                    customersList.get(i).setIsOnLeave(true);
+                                    for (Marker customerMarker : customersMarkerList) {
+                                        if (customerMarker.getTitle().equals(customersList.get(i).getCustomerName())) {
+                                            customerMarker.setTitle(customersList.get(i).getCustomerName()+" (On Leave)");
+                                            customerMarker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_consumer_leave)));
+                                        }
+                                    }
+
+                                }
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
     private void getlocation() {
         if (Build.VERSION.SDK_INT >= 23) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -498,11 +574,11 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
 
                     } else {
                         Location loc = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-                        if(loc != null){
-                             myLatlang = new LatLng(loc.getLatitude(), loc.getLongitude());
-                        }else{
+                        if (loc != null) {
+                            myLatlang = new LatLng(loc.getLatitude(), loc.getLongitude());
+                        } else {
                             Location loc1 = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                            if(loc1 != null){
+                            if (loc1 != null) {
                                 myLatlang = new LatLng(loc1.getLatitude(), loc1.getLongitude());
                             }
                         }
@@ -515,11 +591,11 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
 
                     } else {
                         Location loc = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-                        if(loc != null){
+                        if (loc != null) {
                             myLatlang = new LatLng(loc.getLatitude(), loc.getLongitude());
-                        }else{
+                        } else {
                             Location loc1 = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                            if(loc1 != null){
+                            if (loc1 != null) {
                                 myLatlang = new LatLng(loc1.getLatitude(), loc1.getLongitude());
                             }
                         }
@@ -558,10 +634,10 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
     }
 
     public void updateMarkerIcon() {
-        if (mMap != null && myLatlang != null){
-            if(btnStopTrip.getVisibility() == View.VISIBLE){  // to check if the user is stoping a trip
+        if (mMap != null && myLatlang != null) {
+            if (btnStopTrip.getVisibility() == View.VISIBLE) {  // to check if the user is stoping a trip
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myLatlang, 14f));
-            }else{
+            } else {
                 mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myLatlang, 22f));
             }
 
@@ -572,9 +648,9 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
                     tvTargetCustomerName.setText("Name : " + currentTargetedCustomer.getCustomerName());
                     tvTargetCustomerNumber.setText("Number : " + currentTargetedCustomer.getCustomerPhoneNumber());
                 } else {
-                    if(customerMarker.getTitle().contains(" (On Leave)")){
+                    if (customerMarker.getTitle().contains(" (On Leave)")) {
                         customerMarker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_consumer_leave)));
-                    } else{
+                    } else {
                         customerMarker.setIcon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_consumer)));
                     }
 
@@ -609,8 +685,8 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
     }
 
     private void startTrip() {
-        if(isNetworkAvailable()){
-            if (customersList!= null && customersList.size() > 0) {
+        if (isNetworkAvailable()) {
+            if (customersList != null && customersList.size() > 0) {
                 Intent intent = new Intent(ProducerMapsActivity.this, ProducerService.class);
                 intent.putExtra("myLatlang", myLatlang);
                 startService(intent);
@@ -626,18 +702,18 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
             } else {
                 Toast.makeText(this, "Add Customer First !!!", Toast.LENGTH_SHORT).show();
             }
-        }else{
+        } else {
             Toast.makeText(this, "Please check your Internet", Toast.LENGTH_LONG).show();
         }
     }
 
     private void stopTrip() {
         if (currentTargetedCustomer != null) {
-            if(currentPolyline!=null)
+            if (currentPolyline != null)
                 currentPolyline.remove();
-            if(isNetworkAvailable()) {
-                for(CustomerModelClass customer : customersList){
-                     FirebaseDatabase.getInstance().getReference("Consumers List").child(customer.getId()).child("Arrived").removeValue();
+            if (isNetworkAvailable()) {
+                for (CustomerModelClass customer : customersList) {
+                    FirebaseDatabase.getInstance().getReference("Consumers List").child(customer.getId()).child("Arrived").removeValue();
                 }
             }
             Intent intent = new Intent(ProducerMapsActivity.this, ProducerService.class);
@@ -650,9 +726,9 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
         }
     }
 
-    private void updateLocationInDatabase(){
-        if(myLatlang!=null){
-        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+    private void updateLocationInDatabase() {
+        if (myLatlang != null) {
+            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
             if (networkInfo != null && networkInfo.isConnected()) {
                 FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Latitude").setValue(myLatlang.latitude);
                 FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Longitude").setValue(myLatlang.longitude);
@@ -660,41 +736,41 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
         }
     }
 
-    private LatLng getLocationFromDatabase(){
+    private LatLng getLocationFromDatabase() {
         final double[] lati = new double[1];
         final double[] longi = new double[1];
 
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-            if (networkInfo != null && networkInfo.isConnected()) {
-                DatabaseReference refLati = FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Latitude");
-                refLati.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        lati[0] = dataSnapshot.getValue(double.class);
-                    }
+        if (networkInfo != null && networkInfo.isConnected()) {
+            DatabaseReference refLati = FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Latitude");
+            refLati.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    lati[0] = dataSnapshot.getValue(double.class);
+                }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                    }
-                });
-                DatabaseReference refLongi = FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Longitude");
-                refLongi.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        longi[0] = dataSnapshot.getValue(double.class);
-                    }
+                }
+            });
+            DatabaseReference refLongi = FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Longitude");
+            refLongi.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    longi[0] = dataSnapshot.getValue(double.class);
+                }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                    }
-                });
+                }
+            });
 
-                return new LatLng(lati[0],longi[0]);
-            }
+            return new LatLng(lati[0], longi[0]);
+        }
 
-            return null;
+        return null;
 
     }
 
@@ -702,11 +778,32 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
         NetworkInfo activeNetworkInfo = CONNECTIVITY_MANAGER.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
+
+    private Boolean checkIfOnLeave(ArrayList<String> datesList) {
+
+        for (String date : datesList) {
+            if (date.equals(currentDate)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String getCurrentDate() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+
+        return calendar.getTimeInMillis() + "";
+    }
+
     public class MyBroadcastReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getExtras()!=null) {
+            if (intent.getExtras() != null) {
                 NetworkInfo ni = (NetworkInfo) intent.getExtras().get(ConnectivityManager.EXTRA_NETWORK_INFO);
                 if (ni != null && ni.getState() == NetworkInfo.State.CONNECTED) {
                     lyNoInternet.setVisibility(View.GONE);
@@ -715,29 +812,29 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
                     lyNoInternet.setVisibility(View.VISIBLE);
                 }
             }
-                if (tvDistanceTargetCustomer != null) {
-                    if (intent.getAction().equals("distance value")) {
-                        tvDistanceTargetCustomer.setText(intent.getStringExtra("distance to target"));
-                    } else if (intent.getAction().equals("update marker")) {
-                        updateMarkerIcon();
-                    } else if (intent.getAction().equals("update avg values")) {
-                        estimatedTargetCustomerTime.setText(intent.getStringExtra("estimated time"));
-                        myAvgSpeedTvTargetCustomer.setText(intent.getStringExtra("average speed"));
-                    } else if (intent.getAction().equals("update estimated time value")) {
-                        estimatedTargetCustomerTime.setText(intent.getStringExtra("estimated time"));
-                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLatlang.latitude - 0.00008, myLatlang.longitude), 22f));
-                    } else if (intent.getAction().equals("update polyline")) {
-                        if (currentTargetedCustomer != null)
-                            new FetchURL(context).execute(getUrl(myLatlang, new LatLng(currentTargetedCustomer.getCustomerLatitude(), currentTargetedCustomer.getCustomerLongitude()), "driving"), "driving");
-                        else
-                            currentPolyline.remove();
-                    }
+            if (tvDistanceTargetCustomer != null) {
+                if (intent.getAction().equals("distance value")) {
+                    tvDistanceTargetCustomer.setText(intent.getStringExtra("distance to target"));
+                } else if (intent.getAction().equals("update marker")) {
+                    updateMarkerIcon();
+                } else if (intent.getAction().equals("update avg values")) {
+                    estimatedTargetCustomerTime.setText(intent.getStringExtra("estimated time"));
+                    myAvgSpeedTvTargetCustomer.setText(intent.getStringExtra("average speed"));
+                } else if (intent.getAction().equals("update estimated time value")) {
+                    estimatedTargetCustomerTime.setText(intent.getStringExtra("estimated time"));
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLatlang.latitude - 0.00008, myLatlang.longitude), 22f));
+                } else if (intent.getAction().equals("update polyline")) {
+                    if (currentTargetedCustomer != null)
+                        new FetchURL(context).execute(getUrl(myLatlang, new LatLng(currentTargetedCustomer.getCustomerLatitude(), currentTargetedCustomer.getCustomerLongitude()), "driving"), "driving");
+                    else
+                        currentPolyline.remove();
+                }
             }
         }
     }
 
     // CODE FOR NAVIGATION
-   @Override
+    @Override
     public void onTaskDone(Object... values) {
         if (currentPolyline != null)
             currentPolyline.remove();
@@ -757,7 +854,7 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
         // Output format
         String output = "json";
         // Building the url to the web service
-        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters + "&key=" +  getResources().getString(R.string.directions_api);
+        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters + "&key=" + getResources().getString(R.string.directions_api);
         return url;
     }
 

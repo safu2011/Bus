@@ -1,8 +1,11 @@
 package com.example.bus.ModelClasses;
 
+import java.util.ArrayList;
+
 public class DriverModelClass {
     private String id, name, number, dutyAt, vehicleType;
     private int vehicleCapacity, seatsAvailable;
+
 
     public DriverModelClass(String id, String name, String number, String dutyAt, String vehicalType, int vehicalCapacity, int seatsAvailable) {
         this.id = id;
@@ -37,6 +40,7 @@ public class DriverModelClass {
     public int getVehicleCapacity(){ return vehicleCapacity;}
 
     public int getSeatsAvailable(){return seatsAvailable;}
+
 
 
 }
