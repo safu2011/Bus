@@ -97,7 +97,7 @@ public class NotificationActivity extends AppCompatActivity {
         mBuilder.setVibrate(pattern);
         mBuilder.setContentIntent(pendingIntent);
         mBuilder.setSmallIcon(R.mipmap.ic_launcher_round);
-        mBuilder.setContentTitle("Delivery");
+        mBuilder.setContentTitle("Bus");
         mBuilder.setContentText(message);
         mBuilder.setPriority(Notification.PRIORITY_MAX);
         mBuilder.setStyle(bigText);

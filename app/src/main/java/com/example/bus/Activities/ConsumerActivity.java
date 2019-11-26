@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +23,9 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.bus.R;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -116,16 +120,41 @@ public class ConsumerActivity extends AppCompatActivity implements View.OnClickL
                 .setPositiveButton("Yes, Sign out.", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        FirebaseDatabase.getInstance().getReference("Consumers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Messaging Token").setValue("null");
-                        FirebaseAuth.getInstance().signOut();
-                        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
-                                getString(R.string.user_type), Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = sharedPref.edit();
-                        editor.putString(getString(R.string.user_type), "null");
-                        editor.commit();
-                        FirebaseDatabase.getInstance().getReference("Consumers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Arrived").removeValue();
-                        startActivity(new Intent(ConsumerActivity.this, LoginActivity.class));
-                        finish();
+                        FirebaseDatabase.getInstance().getReference("Consumers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Messaging Token").setValue("null")
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if(task.isSuccessful()){
+                                    FirebaseDatabase.getInstance().getReference("Consumers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Arrived").removeValue()
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+
+                                                    if(task.isSuccessful()){
+                                                        FirebaseAuth.getInstance().signOut();
+                                                        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                                                                getString(R.string.user_type), Context.MODE_PRIVATE);
+                                                        SharedPreferences.Editor editor = sharedPref.edit();
+                                                        editor.putString(getString(R.string.user_type), "null");
+                                                        editor.commit();
+                                                        startActivity(new Intent(ConsumerActivity.this, LoginActivity.class));
+                                                        finish();
+                                                    }else{
+                                                        Log.d("ConsumerActivity", "onComplete: "+task.getException().getMessage());
+                                                        Toast.makeText(ConsumerActivity.this,"Opps something went wrong !!!!",Toast.LENGTH_LONG).show();
+                                                    }
+                                                }
+                                            });
+                                } else{
+                                    Log.d("ConsumerActivity", "onComplete: "+task.getException().getMessage());
+                                    Toast.makeText(ConsumerActivity.this,"Opps something went wrong !!!!",Toast.LENGTH_LONG).show();
+                                }
+
+
+                            }
+                        });
+
+
                     }
                 })
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {

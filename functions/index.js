@@ -16,7 +16,7 @@ exports.ArrivedNotification = functions.database.ref('/Consumers List/{customerI
                 const token = snap.val();
                 if (token === "null") {
                     console.log("User Offline")
-                    return snapshot;
+                    return null;
                 }
                 console.log("token: ", token)
 
@@ -31,16 +31,22 @@ exports.ArrivedNotification = functions.database.ref('/Consumers List/{customerI
                 }
 
                 return admin.messaging().sendToDevice(token, payload)
-                    .then(function (response) {
-                        console.log("Successfully sent message:", response);
-                        return Response;
-                    })
-                    .catch(function (error) {
-                        console.log("Error sending message:", error);
-                        return error;
-                    });
+                  
+            })
+            .then(response=> {
+                if (response===null){
+                console.log("Messeging token was null:", response);
 
-            });
+                    return response;
+                }
+                console.log("Successfully sent message:", response);
+                return response;
+            })
+            .catch(error=> {
+                console.log("Error sending message:", error);
+                return error;
+            })
+
 
 
     })
