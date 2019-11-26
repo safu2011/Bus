@@ -147,7 +147,7 @@ public class ProducerService extends Service implements LocationListener {
         myLatlang = newPosition;
         updateLocationInDatabase();
 
-        if (currentTargetedCustomer != null && currentTargetedCustomer.getCustomerDistanceRemaining() < 50.0) {
+        if (currentTargetedCustomer != null && currentTargetedCustomer.getCustomerDistanceRemaining() <= currentTargetedCustomer.getNotificationDistance()) {
             // bus has arrived at target location
             for (CustomerModelClass customer : customersList) {
                 if (customer.getCustomerName().equals(currentTargetedCustomer.getCustomerName())) {
@@ -274,7 +274,7 @@ public class ProducerService extends Service implements LocationListener {
                 customer.setCustomerDistanceRemaining(getDistanceFromProducer(myLatlang, customer));
         }
         // for finding the nearest customer
-        CustomerModelClass nearestCustomer = new CustomerModelClass(null, "temp", null, "0", "0", null,false);
+        CustomerModelClass nearestCustomer = new CustomerModelClass(null, "temp", null, "0", "0", null,false,50);
         nearestCustomer.setCustomerDistanceRemaining(100000000000000000.0);
 
         for (final CustomerModelClass customer : customersList) {

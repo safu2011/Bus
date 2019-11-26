@@ -330,7 +330,6 @@ public class ChoosePickUpLocationFragment extends Fragment implements OnMapReady
                 return;
             }
         });
-
         driverRef.child("Pick up point latitude").setValue(myMarker.getPosition().latitude);
         driverRef.child("Pick up point longitude").setValue(myMarker.getPosition().longitude).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override

@@ -77,7 +77,7 @@ public class ConsumerRequestFragment extends Fragment {
                         String customerPhoneNumber = ds.child("Phone Number").getValue(String.class);
                         String customerLatti = ds.child("Pick up point latitude").getValue(Double.class).toString();
                         String customerLongi = ds.child("Pick up point longitude").getValue(Double.class).toString();
-                        newCustomersRequestsList.add(new CustomerModelClass(customerId, customerName, customerPhoneNumber, customerLatti, customerLongi, null, false));
+                        newCustomersRequestsList.add(new CustomerModelClass(customerId, customerName, customerPhoneNumber, customerLatti, customerLongi, null, false,0));
                         lyNoRequests.setVisibility(View.GONE);
                     }
                     hideNoInternetScreen();

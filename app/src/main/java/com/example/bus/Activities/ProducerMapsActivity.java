@@ -418,9 +418,14 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
                             String customerPhoneNumber = ds.child("Phone Number").getValue(String.class);
                             String latti = ds.child("Pick up point latitude").getValue(Double.class).toString();
                             String longi = ds.child("Pick up point longitude").getValue(Double.class).toString();
-
+                            int notificationDistance;
+                            if(ds.child("Notification distance values").exists()) {
+                                notificationDistance = ds.child("Notification distance values").getValue(int.class);
+                            }else{
+                                notificationDistance = 50;
+                            }
                             //these two lines
-                            CustomerModelClass currentCustomer = new CustomerModelClass(customerId, customerName, customerPhoneNumber, latti, longi, ds.getRef() + "", false);
+                            CustomerModelClass currentCustomer = new CustomerModelClass(customerId, customerName, customerPhoneNumber, latti, longi, ds.getRef() + "", false,notificationDistance);
                             customersList.add(currentCustomer);
 
 //                            if (dataSnapshot.child("Leave Dates").child(customerId).exists()) {

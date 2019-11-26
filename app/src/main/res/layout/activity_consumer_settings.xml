@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".Activities.ConsumerSettingsActivity"
+    android:background="#fff">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="18dp"
+        android:paddingBottom="18dp"
+        android:paddingLeft="10dp"
+        android:background="#F5F5F5"
+        android:gravity="center_vertical"
+
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Distance for notificaion alert (meters)"
+            android:fontFamily="sans-serif-smallcaps"
+            android:textColor="#000" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="10dp"
+            android:orientation="horizontal"
+            android:clipToPadding="true"
+            android:gravity="right"
+            >
+            <Button
+                android:id="@+id/btn_customer_settings_reduce_distance"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:elevation="22dp"
+                android:text="-"
+                android:background="@drawable/bg_edittext"/>
+
+            <EditText
+                android:id="@+id/et_customer_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-smallcaps"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp"
+                android:text="50"
+                android:inputType="number"
+                android:gravity="center"/>
+
+            <Button
+                android:id="@+id/btn_customer_settings_increase_distance"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:text="+"
+                android:elevation="22dp"
+                android:background="@drawable/bg_edittext"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#000"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="18dp"
+        android:paddingBottom="18dp"
+        android:paddingLeft="10dp"
+        android:background="#F5F5F5"
+        android:gravity="center_vertical"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Aggresive Notificatiion"
+            android:fontFamily="sans-serif-smallcaps"
+            android:textColor="#000" />
+        <Button
+            android:id="@+id/btn_customer_settings_notification_hint"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:background="@drawable/ic_info_outline_black"
+            android:layout_marginLeft="6dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="20dp"
+            android:orientation="horizontal"
+            android:clipToPadding="true"
+            android:gravity="right"
+            >
+            <Switch
+                android:id="@+id/switch_customer_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#000"/>
+
+</LinearLayout>

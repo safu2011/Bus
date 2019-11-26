@@ -306,7 +306,7 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
                     double avgSpeed = 30;
-                    if (dataSnapshot.child("Average speed").exists()){
+                    if (dataSnapshot.child("Average speed").exists() && dataSnapshot.child("Average speed").getValue(double.class) > 0){
                         avgSpeed = dataSnapshot.child("Average speed").getValue(double.class);
                     }
                     double driverLati = dataSnapshot.child("Latitude").getValue(double.class);

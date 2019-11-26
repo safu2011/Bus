@@ -18,7 +18,8 @@ public class CustomerModelClass implements Serializable {
     private PolylineOptions polylineOptions;
     private Boolean isOnLeave = false;
     private ArrayList<String> LeaveDates = new ArrayList<>();
-    public CustomerModelClass(String id, String name, String phoneNumber, String latitude, String longitude, String databaseReference,Boolean isOnLeave) {
+    private int notificationDistance;
+    public CustomerModelClass(String id, String name, String phoneNumber, String latitude, String longitude, String databaseReference,Boolean isOnLeave,int notificationDistance) {
         this.id = id;
         this.name = name;
         this.phoneNumber = phoneNumber;
@@ -26,6 +27,7 @@ public class CustomerModelClass implements Serializable {
         this.longitude = Double.parseDouble(longitude);
         this.databaseReference = databaseReference;
         this.isOnLeave = isOnLeave;
+        this.notificationDistance = notificationDistance;
     }
 
     public String getId() {
@@ -105,4 +107,6 @@ public class CustomerModelClass implements Serializable {
     public ArrayList<String> getLeaveDats(){
         return LeaveDates;
     }
+
+    public int getNotificationDistance(){return notificationDistance;}
 }

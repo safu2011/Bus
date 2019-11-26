@@ -64,6 +64,9 @@ public class ConsumerActivity extends AppCompatActivity implements View.OnClickL
             case R.id.nav_sign_out_customer_activity:
                 logout();
                 break;
+            case R.id.nav_settings_customer_activity:
+                startActivity(new Intent(this,ConsumerSettingsActivity.class));
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
