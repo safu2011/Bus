@@ -126,6 +126,9 @@ public class ProducerService extends Service implements LocationListener {
             tts.stop();
             tts.shutdown();
         }
+        for(CustomerModelClass customer : customersList){
+            customer.setCustomerDeliveryStatus("Pending");
+        }
         if (isNetworkAvailable()) {
             FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("IsActive").setValue(false);
         }
@@ -270,6 +273,7 @@ public class ProducerService extends Service implements LocationListener {
     public CustomerModelClass getNearestCustomer() {
         //for calculating estimated time for each customer
         for (CustomerModelClass customer : customersList) {
+            Log.d("mylog", "customer: "+ customer.getCustomerDeliveryStatus());
             if (!customer.getCustomerDeliveryStatus().equals("Deliverd"))
                 customer.setCustomerDistanceRemaining(getDistanceFromProducer(myLatlang, customer));
         }
@@ -277,38 +281,18 @@ public class ProducerService extends Service implements LocationListener {
         CustomerModelClass nearestCustomer = new CustomerModelClass(null, "temp", null, "0", "0", null,false,50);
         nearestCustomer.setCustomerDistanceRemaining(100000000000000000.0);
 
-        for (final CustomerModelClass customer : customersList) {
-
-            DatabaseReference childLeaveCheckRef = FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Customers").child(customer.getId()).child("Is on leave");
-            childLeaveCheckRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    if(dataSnapshot.exists() && dataSnapshot.getValue(String.class).equals("true"))
-                        customer.setIsOnLeave(true);
-                    else
-                        customer.setIsOnLeave(false);
-                }
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                }
-            });
+        for (CustomerModelClass customer : customersList) {
 
             if ((!customer.getCustomerDeliveryStatus().equals("Deliverd")) && (customer.getCustomerDistanceRemaining() < nearestCustomer.getCustomerDistanceRemaining())) {
                 if(customer.getIsOnLeave())
                     customer.setCustomerDeliveryStatus("Deliverd");
-                else
+                else {
+                    customer.setCustomerDeliveryStatus("Active");
                     nearestCustomer = customer;
+                }
             }
         }
 
-        // for setting the status of nearest customer
-        for (CustomerModelClass customer : customersList) {
-            if (nearestCustomer.getCustomerName().equals(customer.getCustomerName())) {
-                customer.setCustomerDeliveryStatus("Active");
-                nearestCustomer = customer;
-            }
-        }
         if (nearestCustomer.getCustomerName().equals("temp")) {
             stopSelf();
             return null;
