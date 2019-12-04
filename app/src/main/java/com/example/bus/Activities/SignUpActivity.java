@@ -1,6 +1,8 @@
 package com.example.bus.Activities;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -40,6 +42,7 @@ public class SignUpActivity extends AppCompatActivity {
     private DatabaseReference myRef;
     private LinearLayout lyProducerRelatedInfo;
     private String[] userTypeList;
+    private SharedPreferences.Editor editor;
 
     private String fullName, dutyAtInstitute, vehicalType, phoneNumber;
     private int seatingCapacity;
@@ -129,11 +132,19 @@ public class SignUpActivity extends AppCompatActivity {
                     myRef.child("Vehical Type").setValue(vehicalType);
                     myRef.child("IsActive").setValue(false);
                     myRef.child("Capacity").setValue(seatingCapacity);
+                    myRef.child("Seats Occupied").setValue(0);
+                    SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                            getString(R.string.user_type), Context.MODE_PRIVATE);
+                    editor = sharedPref.edit();
+                    editor.putString(getString(R.string.user_type), "Producer");
+                    editor.commit();
                     startActivity(new Intent(SignUpActivity.this, ProducerMapsActivity.class));
                 } else {
                     myRef = myRef.child(FirebaseAuth.getInstance().getCurrentUser().getUid());
                     myRef.child("Name").setValue(fullName);
                     myRef.child("Phone Number").setValue(phoneNumber);
+                    editor.putString(getString(R.string.user_type), "Consumer");
+                    editor.commit();
                     startActivity(new Intent(SignUpActivity.this, ConsumerActivity.class));
                 }
                 finish();
@@ -217,7 +228,7 @@ public class SignUpActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                // Failed to read valu
+                // Failed to read value
             }
         });
     }

@@ -4,8 +4,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -21,6 +24,8 @@ import android.widget.Toast;
 
 import com.example.bus.ModelClasses.DriverModelClass;
 import com.example.bus.R;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -167,6 +172,11 @@ public class DriversInfoActivity extends AppCompatActivity {
         startActivity(new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", phoneNumber, null)));
     }
 
+    private boolean isNetworkAvailable() {
+        NetworkInfo networkInfo = ((ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
+        return networkInfo != null && networkInfo.isConnected();
+    }
+
     private void sendSms(String phoneNumber){
         Intent i = new Intent(Intent.ACTION_VIEW);
         i.setData(Uri.parse("smsto:"));
@@ -183,8 +193,35 @@ public class DriversInfoActivity extends AppCompatActivity {
                 .setPositiveButton("Yes, Proceed ", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        driversList.remove(index);
-                        adapter.notifyDataSetChanged();
+                        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference("Producers List").child(driversList.get(index).getId());
+                        DatabaseReference ref1 = rootRef.child("Customers").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                        if(isNetworkAvailable()){
+                            showLoadingScreen();
+                            ref1.removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    DatabaseReference ref2 = FirebaseDatabase.getInstance().getReference("Consumers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Drivers").child(driversList.get(index).getId());
+                                    ref2.removeValue();
+
+                                    int occupiedSeats = driversList.get(index).getVehicleCapacity()-driversList.get(index).getSeatsAvailable();
+                                    occupiedSeats--;
+                                    rootRef.child("Seats Occupied").setValue(occupiedSeats);
+
+                                    driversList.remove(index);
+                                    adapter.notifyDataSetChanged();
+
+                                    hideLoadingScreen();
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    hideLoadingScreen();
+                                    Toast.makeText(DriversInfoActivity.this,"Opps Something went wrong",Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }else{
+                            Toast.makeText(DriversInfoActivity.this,"No Internet !!!",Toast.LENGTH_LONG).show();
+                        }
                     }
                 })
                 .setNegativeButton("No", new DialogInterface.OnClickListener() {

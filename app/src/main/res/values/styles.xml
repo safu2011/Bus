@@ -28,4 +28,10 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <style name="FullScreendialogTheme" parent="Theme.AppCompat.Light.DialogWhenLarge">
+        <item name="android:statusBarColor" tools:targetApi="lollipop">@color/colorPrimary</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowAnimationStyle">@style/Animation.Design.BottomSheetDialog</item>
+    </style>
+
 </resources>
