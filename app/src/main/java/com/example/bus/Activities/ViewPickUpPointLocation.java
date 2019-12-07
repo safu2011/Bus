@@ -31,6 +31,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -39,6 +40,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+
+import static com.example.bus.Services.ProducerService.customersList;
 
 public class ViewPickUpPointLocation extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -129,44 +132,53 @@ public class ViewPickUpPointLocation extends AppCompatActivity implements OnMapR
     private void acceptRequest() {
         showLoadingScreen();
 
+        FirebaseDatabase.getInstance().getReference("Consumers List").child(currentSelectedCustomer.getId()).child("Drivers").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .setValue("Service Active");
+
         DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Customers").child(currentSelectedCustomer.getId());
 
         myRef.child("Name").setValue(currentSelectedCustomer.getCustomerName());
         myRef.child("Phone Number").setValue(currentSelectedCustomer.getCustomerPhoneNumber());
         myRef.child("Pick up point latitude").setValue(currentSelectedCustomer.getCustomerLatitude());
-        myRef.child("Pick up point longitude").setValue(currentSelectedCustomer.getCustomerLongitude()).addOnCompleteListener(new OnCompleteListener<Void>() {
+        myRef.child("Pick up point longitude").setValue(currentSelectedCustomer.getCustomerLongitude()).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
-            public void onComplete(Task<Void> task) {
-                hideLoadingScreen();
-                FirebaseDatabase.getInstance().getReference("Consumers List").child(currentSelectedCustomer.getId()).child("Drivers").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                        .setValue("Service Active");
+            public void onSuccess(Void aVoid) {
                 FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                         .child("New Requests")
                         .child(currentSelectedCustomer.getId())
                         .removeValue();
 
                 seatsOccupied++;
+
                 DatabaseReference capacityRef = FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Seats Occupied");
-                capacityRef.setValue(seatsOccupied);
+                capacityRef.setValue(seatsOccupied).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(Task<Void> task) {
+                        hideLoadingScreen();
+                        Toast.makeText(ViewPickUpPointLocation.this, "Request Accepted", Toast.LENGTH_LONG).show();
+                        customersList = null;
+                        try {
+                            Thread.sleep(3000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
 
-                Toast.makeText(ViewPickUpPointLocation.this, "Request Accepted", Toast.LENGTH_LONG).show();
-
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                startActivity(new Intent(ViewPickUpPointLocation.this, ProducerMapsActivity.class));
-                finish();
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(Exception e) {
-                hideLoadingScreen();
-                Toast.makeText(ViewPickUpPointLocation.this, "Opps Something went wrong !!!", Toast.LENGTH_SHORT).show();
-                return;
+                        startActivity(new Intent(ViewPickUpPointLocation.this, ProducerMapsActivity.class));
+                        finish();
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(Exception e) {
+                        hideLoadingScreen();
+                        Toast.makeText(ViewPickUpPointLocation.this, "Opps Something went wrong !!!", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                });
             }
         });
+
+
+
 
 
     }

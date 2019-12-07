@@ -37,6 +37,7 @@ import java.util.ArrayList;
 public class ConsumerRequestFragment extends Fragment {
 
     private static final String ARG_SECTION_NUMBER = "section_number";
+    public static boolean NEW_CUSTOMER_ADDED = false;
     private DatabaseReference myRef;
     private View root;
     private RecyclerView recyclerView;
@@ -152,6 +153,8 @@ public class ConsumerRequestFragment extends Fragment {
 
                                         newCustomersRequestsList.remove(i);
                                         adapter.notifyDataSetChanged();
+
+                                        NEW_CUSTOMER_ADDED = true;
 
                                     }
                                 });

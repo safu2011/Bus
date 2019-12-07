@@ -150,10 +150,10 @@ public class ProviderPersonalInfoFragment extends Fragment {
                 spinnerVehicalType.setSelection(i);
             }
         }
-
-        tvTotalCustomers.setText(customersList.size()+"");
-        tvTotalCustomersUpdate.setText(customersList.size()+"");
-
+        if(customersList!=null) {
+            tvTotalCustomers.setText(customersList.size() + "");
+            tvTotalCustomersUpdate.setText(customersList.size() + "");
+        }
         hideLoadingScreen();
     }
     private void setListeners(){

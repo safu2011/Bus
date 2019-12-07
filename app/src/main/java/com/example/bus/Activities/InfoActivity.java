@@ -1,5 +1,6 @@
 package com.example.bus.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import com.google.android.material.tabs.TabLayout;
 import androidx.viewpager.widget.ViewPager;
@@ -24,6 +25,5 @@ public class InfoActivity extends AppCompatActivity {
         tabs.setupWithViewPager(viewPager);
 
     }
-
 
 }

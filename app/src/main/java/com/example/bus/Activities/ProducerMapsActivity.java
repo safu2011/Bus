@@ -76,6 +76,7 @@ import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.example.bus.InfoFragmentUi.ConsumerRequestFragment.NEW_CUSTOMER_ADDED;
 import static com.example.bus.Services.ProducerService.currentTargetedCustomer;
 import static com.example.bus.Services.ProducerService.customersList;
 
@@ -114,6 +115,10 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
             updateMarkerIcon();
             setLeaveListeners();
             btnStartTtip.setVisibility(View.GONE);
+        }else if(NEW_CUSTOMER_ADDED){
+            customersList = null;
+            getCustomersInfo();
+            NEW_CUSTOMER_ADDED = false;
         } else {
             if (isNetworkAvailable())
                 FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("IsActive").setValue(false);
@@ -411,70 +416,61 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
                 myRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                        for (DataSnapshot ds : dataSnapshot.child("Customers").getChildren()) {
-                            String customerId = ds.getKey();
-                            String customerName = ds.child("Name").getValue(String.class);
-                            String customerPhoneNumber = ds.child("Phone Number").getValue(String.class);
-                            String latti = ds.child("Pick up point latitude").getValue(Double.class).toString();
-                            String longi = ds.child("Pick up point longitude").getValue(Double.class).toString();
-                            int notificationDistance;
-                            if(ds.child("Notification distance values").exists()) {
-                                notificationDistance = ds.child("Notification distance values").getValue(int.class);
-                            }else{
-                                notificationDistance = 50;
-                            }
-                            //these two lines
-                            CustomerModelClass currentCustomer = new CustomerModelClass(customerId, customerName, customerPhoneNumber, latti, longi, ds.getRef() + "", false,notificationDistance);
-                            customersList.add(currentCustomer);
-
-//                            if (dataSnapshot.child("Leave Dates").child(customerId).exists()) {
-//                                ArrayList<String> daysOffList = new ArrayList<>();
-//                                for (DataSnapshot dayOffTimeSnap : dataSnapshot.child("Leave Dates").child(customerId).getChildren()) {
-//                                    String date = dayOffTimeSnap.getKey();
-//                                    daysOffList.add(date);
-//                                }
-//                                if (checkIfOnLeave(daysOffList)) {
-//                                    CustomerModelClass currentCustomer = new CustomerModelClass(customerId, customerName, customerPhoneNumber, latti, longi, ds.getRef() + "", true);
-//                                    currentCustomer.setLeaveDates(daysOffList);
-//                                    customersList.add(currentCustomer);
-//
-//                                } else {
-//                                    CustomerModelClass currentCustomer = new CustomerModelClass(customerId, customerName, customerPhoneNumber, latti, longi, ds.getRef() + "", false);
-//                                    currentCustomer.setLeaveDates(daysOffList);
-//                                    customersList.add(currentCustomer);
-//                                }
-//                            } else {
-//                                CustomerModelClass currentCustomer = new CustomerModelClass(customerId, customerName, customerPhoneNumber, latti, longi, ds.getRef() + "", false);
-//                                customersList.add(currentCustomer);
-//                            }
-                        }
-
-                        // drawing markers on Map if not drawn before
-                        if (customersMarkerList.size() == 0) {
-                            for (CustomerModelClass customer : customersList) {
-                                if ((currentTargetedCustomer != null) && (customer.getCustomerName().equals(currentTargetedCustomer.getCustomerName()))) {
-                                    customersMarkerList.add(mMap.addMarker(new MarkerOptions()
-                                            .position(new LatLng(customer.getCustomerLatitude(), customer.getCustomerLongitude()))
-                                            .title(customer.getCustomerName())
-                                            .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_target_consumer)))));
+                        if(currentTargetedCustomer==null) {
+                            for (DataSnapshot ds : dataSnapshot.child("Customers").getChildren()) {
+                                String customerId = ds.getKey();
+                                String customerName = ds.child("Name").getValue(String.class);
+                                String customerPhoneNumber = ds.child("Phone Number").getValue(String.class);
+                                String latti = ds.child("Pick up point latitude").getValue(Double.class).toString();
+                                String longi = ds.child("Pick up point longitude").getValue(Double.class).toString();
+                                int notificationDistance;
+                                if (ds.child("Notification distance values").exists()) {
+                                    notificationDistance = ds.child("Notification distance values").getValue(int.class);
                                 } else {
-//                                    if (customer.getIsOnLeave()) {
-//                                        customersMarkerList.add(mMap.addMarker(new MarkerOptions()
-//                                                .position(new LatLng(customer.getCustomerLatitude(), customer.getCustomerLongitude()))
-//                                                .title(customer.getCustomerName() + " (On Leave)")
-//                                                .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_consumer_leave)))));
-//                                    } else {
+                                    notificationDistance = 50;
+                                }
+                                //these two lines
+                                CustomerModelClass currentCustomer = new CustomerModelClass(customerId, customerName, customerPhoneNumber, latti, longi, ds.getRef() + "", false, notificationDistance);
+                                customersList.add(currentCustomer);
+                            }
+
+                            // drawing markers on Map if not drawn before
+                            if (customersMarkerList.size() == 0) {
+                                for (CustomerModelClass customer : customersList) {
+                                    if ((currentTargetedCustomer != null) && (customer.getCustomerName().equals(currentTargetedCustomer.getCustomerName()))) {
+                                        customersMarkerList.add(mMap.addMarker(new MarkerOptions()
+                                                .position(new LatLng(customer.getCustomerLatitude(), customer.getCustomerLongitude()))
+                                                .title(customer.getCustomerName())
+                                                .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_target_consumer)))));
+                                    } else {
                                         customersMarkerList.add(mMap.addMarker(new MarkerOptions()
                                                 .position(new LatLng(customer.getCustomerLatitude(), customer.getCustomerLongitude()))
                                                 .title(customer.getCustomerName())
                                                 .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_consumer)))));
-                                    //}
+                                    }
+                                }
+                            } else {
+                                for (Marker marker : customersMarkerList) {
+                                    marker.remove();
+                                }
+                                customersMarkerList.clear();
+                                for (CustomerModelClass customer : customersList) {
+                                    if ((currentTargetedCustomer != null) && (customer.getCustomerName().equals(currentTargetedCustomer.getCustomerName()))) {
+                                        customersMarkerList.add(mMap.addMarker(new MarkerOptions()
+                                                .position(new LatLng(customer.getCustomerLatitude(), customer.getCustomerLongitude()))
+                                                .title(customer.getCustomerName())
+                                                .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_target_consumer)))));
+                                    } else {
+                                        customersMarkerList.add(mMap.addMarker(new MarkerOptions()
+                                                .position(new LatLng(customer.getCustomerLatitude(), customer.getCustomerLongitude()))
+                                                .title(customer.getCustomerName())
+                                                .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_consumer)))));
+                                    }
                                 }
                             }
+                            setLeaveListeners();
+                            hideLoadingScreen();
                         }
-                        setLeaveListeners();
-                        hideLoadingScreen();
                     }
 
                     @Override
@@ -677,8 +673,10 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
     }
 
     public void hideLoadingScreen() {
-        loadingScreen.setVisibility(View.GONE);
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        if(loadingScreen.getVisibility()==View.VISIBLE){
+            loadingScreen.setVisibility(View.GONE);
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+        }
     }
 
     private void setCustomerImageBottomSheet(int id) {

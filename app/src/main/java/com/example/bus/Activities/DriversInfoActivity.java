@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,6 +19,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,6 +44,7 @@ public class DriversInfoActivity extends AppCompatActivity {
     private RecyclerView.Adapter<DriversInfoActivity.ViewHolderRt> adapter;
     private ArrayList<DriverModelClass> driversList;
     private LinearLayout loadingScreen;
+    private Dialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +57,7 @@ public class DriversInfoActivity extends AppCompatActivity {
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     showLoadingScreen();
                     DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Producers List").child(ds.getKey());
@@ -78,6 +83,9 @@ public class DriversInfoActivity extends AppCompatActivity {
                             Toast.makeText(DriversInfoActivity.this, "Opps Something went wrong !!!", Toast.LENGTH_SHORT).show();
                         }
                     });
+                }
+                }else{
+                    hideLoadingScreen();
                 }
 
             }
@@ -126,6 +134,12 @@ public class DriversInfoActivity extends AppCompatActivity {
                         sendSms(driversList.get(i).getNumber());
                     }
                 });
+                viewHolderRt.rateDriver.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        rateDriver();
+                    }
+                });
 
             }
 
@@ -139,7 +153,7 @@ public class DriversInfoActivity extends AppCompatActivity {
 
     private class ViewHolderRt extends RecyclerView.ViewHolder {
         LinearLayout parentLy;
-        TextView driver_name, number, dutyAt, vehicalType, removeDriver, messageDriver, callDriver, vehicleCapacity;
+        TextView driver_name, number, dutyAt, vehicalType, removeDriver, messageDriver, callDriver, vehicleCapacity, rateDriver;
 
         public ViewHolderRt(View itemView) {
             super(itemView);
@@ -152,6 +166,7 @@ public class DriversInfoActivity extends AppCompatActivity {
             messageDriver = itemView.findViewById(R.id.tv_driver_message);
             callDriver = itemView.findViewById(R.id.tv_driver_call);
             vehicleCapacity = itemView.findViewById(R.id.tv_driver_seats_available);
+            rateDriver = itemView.findViewById(R.id.tv_driver_ratting);
         }
 
     }
@@ -235,5 +250,175 @@ public class DriversInfoActivity extends AppCompatActivity {
         dialog.show();
 
 
+    }
+
+    private void rateDriver(){
+        dialog = new Dialog(DriversInfoActivity.this);
+        dialog.setContentView(R.layout.driver_ratting_blueprint);
+        Button cancelDialog = dialog.findViewById(R.id.btn_cancel_rating);
+        Button submitRating = dialog.findViewById(R.id.btn_submit_rating);
+
+        setRatingDialogBoxListeners();
+
+        cancelDialog.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        submitRating.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+                Toast.makeText(DriversInfoActivity.this,"Rating submitted",Toast.LENGTH_SHORT).show();
+            }
+        });
+        dialog.show();
+    }
+
+    private void setRatingDialogBoxListeners(){
+        ImageView star1 = dialog.findViewById(R.id.unselected_star_1);
+        ImageView star2 = dialog.findViewById(R.id.unselected_star_2);
+        ImageView star3 = dialog.findViewById(R.id.unselected_star_3);
+        ImageView star4 = dialog.findViewById(R.id.unselected_star_4);
+        ImageView star5 = dialog.findViewById(R.id.unselected_star_5);
+
+        ImageView selectedStar1 = dialog.findViewById(R.id.selected_star_1);
+        ImageView selectedStar2 = dialog.findViewById(R.id.selected_star_2);
+        ImageView selectedStar3 = dialog.findViewById(R.id.selected_star_3);
+        ImageView selectedStar4 = dialog.findViewById(R.id.selected_star_4);
+        ImageView selectedStar5 = dialog.findViewById(R.id.selected_star_5);
+
+        star1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setFirstStar("select");
+            }
+        });
+
+        star2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setFirstStar("select");
+                setSecondStar("select");
+            }
+        });
+
+        star3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setFirstStar("select");
+                setSecondStar("select");
+                setThirdStar("select");
+            }
+        });
+
+        star4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setFirstStar("select");
+                setSecondStar("select");
+                setThirdStar("select");
+                setFourthStar("select");
+            }
+        });
+
+        star5.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setFirstStar("select");
+                setSecondStar("select");
+                setThirdStar("select");
+                setFourthStar("select");
+                setFifthStar("select");
+            }
+        });
+
+
+        selectedStar1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setFirstStar("unSelect");
+            }
+        });
+
+        selectedStar2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setFirstStar("unSelect");
+                setSecondStar("unSelect");
+            }
+        });
+
+        selectedStar3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setFirstStar("unSelect");
+                setSecondStar("unSelect");
+                setThirdStar("unSelect");
+            }
+        });
+
+        selectedStar4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setFirstStar("unSelect");
+                setSecondStar("unSelect");
+                setThirdStar("unSelect");
+                setFourthStar("unSelect");
+            }
+        });
+
+        selectedStar5.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setFirstStar("unSelect");
+                setSecondStar("unSelect");
+                setThirdStar("unSelect");
+                setFourthStar("unSelect");
+                setFifthStar("unSelect");
+            }
+        });
+    }
+
+    private void setFirstStar(String sate){
+        ImageView selectedStar1 = dialog.findViewById(R.id.selected_star_1);
+        if(sate.equals("select"))
+            selectedStar1.setVisibility(View.VISIBLE);
+        else
+            selectedStar1.setVisibility(View.INVISIBLE);
+    }
+
+    private void setSecondStar(String sate){
+        ImageView selectedStar2 = dialog.findViewById(R.id.selected_star_2);
+        if(sate.equals("select"))
+            selectedStar2.setVisibility(View.VISIBLE);
+        else
+            selectedStar2.setVisibility(View.INVISIBLE);
+    }
+
+    private void setThirdStar(String sate){
+        ImageView selectedStar3 = dialog.findViewById(R.id.selected_star_3);
+        if(sate.equals("select"))
+            selectedStar3.setVisibility(View.VISIBLE);
+        else
+            selectedStar3.setVisibility(View.INVISIBLE);
+    }
+
+    private void setFourthStar(String sate){
+        ImageView selectedStar4 = dialog.findViewById(R.id.selected_star_4);
+        if(sate.equals("select"))
+            selectedStar4.setVisibility(View.VISIBLE);
+        else
+            selectedStar4.setVisibility(View.INVISIBLE);
+    }
+
+    private void setFifthStar(String sate){
+        ImageView selectedStar5 = dialog.findViewById(R.id.selected_star_5);
+        if(sate.equals("select"))
+            selectedStar5.setVisibility(View.VISIBLE);
+        else
+            selectedStar5.setVisibility(View.INVISIBLE);
     }
 }

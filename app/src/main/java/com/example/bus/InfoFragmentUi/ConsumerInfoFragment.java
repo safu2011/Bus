@@ -103,7 +103,10 @@ public class ConsumerInfoFragment extends Fragment {
 
             @Override
             public int getItemCount() {
-                return customersList.size();
+                if(customersList!=null)
+                 return customersList.size();
+                else
+                    return 0;
             }
         };
         recyclerView.setAdapter(adapter);
