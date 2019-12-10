@@ -53,37 +53,42 @@ public class DriversInfoActivity extends AppCompatActivity {
         driversList = new ArrayList<>();
         recyclerView();
         showLoadingScreen();
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Consumers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Drivers");
-        reference.addListenerForSingleValueEvent(new ValueEventListener() {
+        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference("Consumers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Drivers");
+        rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                    showLoadingScreen();
-                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Producers List").child(ds.getKey());
-                    ref.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            int vehicleOccupiedSeats = dataSnapshot.child("Seats Occupied").getValue(int.class);
-                            int vehicalCapacity =dataSnapshot.child("Capacity").getValue(int.class);
-                            int seatsAvailable = vehicalCapacity - vehicleOccupiedSeats;
-                            String id = dataSnapshot.getKey();
-                            String name = dataSnapshot.child("Name").getValue(String.class);
-                            String phoneNumber = dataSnapshot.child("Phone Number").getValue(String.class);
-                            String dutyAt = dataSnapshot.child("Institute Name").getValue(String.class);
-                            String vehicalType = dataSnapshot.child("Vehical Type").getValue(String.class);
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        showLoadingScreen();
+                        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Producers List").child(ds.getKey());
+                        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                int vehicleOccupiedSeats = dataSnapshot.child("Seats Occupied").getValue(int.class);
+                                int vehicalCapacity =dataSnapshot.child("Capacity").getValue(int.class);
+                                int seatsAvailable = vehicalCapacity - vehicleOccupiedSeats;
+                                String id = dataSnapshot.getKey();
+                                String name = dataSnapshot.child("Name").getValue(String.class);
+                                String phoneNumber = dataSnapshot.child("Phone Number").getValue(String.class);
+                                String dutyAt = dataSnapshot.child("Institute Name").getValue(String.class);
+                                String vehicalType = dataSnapshot.child("Vehical Type").getValue(String.class);
+                                int rating = 0;
+                                if(dataSnapshot.child("Customers").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Driver rating").exists())
+                                    rating = dataSnapshot.child("Customers").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Driver rating").getValue(int.class);
+                                DriverModelClass driver = new DriverModelClass(id, name, phoneNumber, dutyAt, vehicalType, vehicalCapacity,seatsAvailable);
+                                driver.setRating(rating);
+                                driversList.add(driver);
 
-                            driversList.add(new DriverModelClass(id, name, phoneNumber, dutyAt, vehicalType, vehicalCapacity,seatsAvailable));
-                            adapter.notifyDataSetChanged();
-                            hideLoadingScreen();
-                        }
+                                adapter.notifyDataSetChanged();
+                                hideLoadingScreen();
+                            }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-                            Toast.makeText(DriversInfoActivity.this, "Opps Something went wrong !!!", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(DriversInfoActivity.this, "Opps Something went wrong !!!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
                 }else{
                     hideLoadingScreen();
                 }
@@ -125,7 +130,7 @@ public class DriversInfoActivity extends AppCompatActivity {
                 viewHolderRt.removeDriver.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                       removeDriver(i);
+                        removeDriver(i);
                     }
                 });
                 viewHolderRt.messageDriver.setOnClickListener(new View.OnClickListener() {
@@ -137,7 +142,7 @@ public class DriversInfoActivity extends AppCompatActivity {
                 viewHolderRt.rateDriver.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        rateDriver();
+                        rateDriver(i);
                     }
                 });
 
@@ -252,13 +257,14 @@ public class DriversInfoActivity extends AppCompatActivity {
 
     }
 
-    private void rateDriver(){
+    private void rateDriver(int index){
         dialog = new Dialog(DriversInfoActivity.this);
         dialog.setContentView(R.layout.driver_ratting_blueprint);
         Button cancelDialog = dialog.findViewById(R.id.btn_cancel_rating);
         Button submitRating = dialog.findViewById(R.id.btn_submit_rating);
 
-        setRatingDialogBoxListeners();
+        setDriverRating(index);
+        setRatingDialogBoxListeners(index);
 
         cancelDialog.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -270,14 +276,52 @@ public class DriversInfoActivity extends AppCompatActivity {
         submitRating.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(isNetworkAvailable()) {
+                    DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference("Producers List").child(driversList.get(index).getId()).child("Customers").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Driver rating");
+                    rootRef.setValue(driversList.get(index).getRating());
+                    Toast.makeText(DriversInfoActivity.this,"Rating submitted",Toast.LENGTH_SHORT).show();
+                }else{
+                    Toast.makeText(DriversInfoActivity.this,"No Internet",Toast.LENGTH_SHORT).show();
+                }
                 dialog.dismiss();
-                Toast.makeText(DriversInfoActivity.this,"Rating submitted",Toast.LENGTH_SHORT).show();
+
             }
         });
         dialog.show();
     }
 
-    private void setRatingDialogBoxListeners(){
+    private void setDriverRating(int index) {
+        int value = driversList.get(index).getRating();
+        switch (value){
+            case 1:
+                setFirstStar("null",index);
+                break;
+            case 2:
+                setFirstStar("null",index);
+                setSecondStar("null",index);
+                break;
+            case 3:
+                setFirstStar("null",index);
+                setSecondStar("null",index);
+                setThirdStar("null",index);
+                break;
+            case 4:
+                setFirstStar("null",index);
+                setSecondStar("null",index);
+                setThirdStar("null",index);
+                setFourthStar("null",index);
+                break;
+            case 5:
+                setFirstStar("null",index);
+                setSecondStar("null",index);
+                setThirdStar("null",index);
+                setFourthStar("null",index);
+                setFifthStar("null",index);
+                break;
+        }
+    }
+
+    private void setRatingDialogBoxListeners(int index){
         ImageView star1 = dialog.findViewById(R.id.unselected_star_1);
         ImageView star2 = dialog.findViewById(R.id.unselected_star_2);
         ImageView star3 = dialog.findViewById(R.id.unselected_star_3);
@@ -293,45 +337,45 @@ public class DriversInfoActivity extends AppCompatActivity {
         star1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setFirstStar("select");
+                setFirstStar("select",index);
             }
         });
 
         star2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setFirstStar("select");
-                setSecondStar("select");
+                setFirstStar("select",index);
+                setSecondStar("select",index);
             }
         });
 
         star3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setFirstStar("select");
-                setSecondStar("select");
-                setThirdStar("select");
+                setFirstStar("select",index);
+                setSecondStar("select",index);
+                setThirdStar("select",index);
             }
         });
 
         star4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setFirstStar("select");
-                setSecondStar("select");
-                setThirdStar("select");
-                setFourthStar("select");
+                setFirstStar("select",index);
+                setSecondStar("select",index);
+                setThirdStar("select",index);
+                setFourthStar("select",index);
             }
         });
 
         star5.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setFirstStar("select");
-                setSecondStar("select");
-                setThirdStar("select");
-                setFourthStar("select");
-                setFifthStar("select");
+                setFirstStar("select",index);
+                setSecondStar("select",index);
+                setThirdStar("select",index);
+                setFourthStar("select",index);
+                setFifthStar("select",index);
             }
         });
 
@@ -339,86 +383,124 @@ public class DriversInfoActivity extends AppCompatActivity {
         selectedStar1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setFirstStar("unSelect");
+                setFirstStar("unSelect",index);
             }
         });
 
         selectedStar2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setFirstStar("unSelect");
-                setSecondStar("unSelect");
+                setFirstStar("unSelect",index);
+                setSecondStar("unSelect",index);
             }
         });
 
         selectedStar3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setFirstStar("unSelect");
-                setSecondStar("unSelect");
-                setThirdStar("unSelect");
+                setFirstStar("unSelect",index);
+                setSecondStar("unSelect",index);
+                setThirdStar("unSelect",index);
             }
         });
 
         selectedStar4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setFirstStar("unSelect");
-                setSecondStar("unSelect");
-                setThirdStar("unSelect");
-                setFourthStar("unSelect");
+                setFirstStar("unSelect",index);
+                setSecondStar("unSelect",index);
+                setThirdStar("unSelect",index);
+                setFourthStar("unSelect",index);
             }
         });
 
         selectedStar5.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setFirstStar("unSelect");
-                setSecondStar("unSelect");
-                setThirdStar("unSelect");
-                setFourthStar("unSelect");
-                setFifthStar("unSelect");
+                setFirstStar("unSelect",index);
+                setSecondStar("unSelect",index);
+                setThirdStar("unSelect",index);
+                setFourthStar("unSelect",index);
+                setFifthStar("unSelect",index);
             }
         });
     }
 
-    private void setFirstStar(String sate){
+    private void clearAllStars(int index){
+        setFirstStar("unSelect",index);
+        setSecondStar("unSelect",index);
+        setThirdStar("unSelect",index);
+        setFourthStar("unSelect",index);
+        setFifthStar("unSelect",index);
+    }
+
+    private void setFirstStar(String sate, int index){
         ImageView selectedStar1 = dialog.findViewById(R.id.selected_star_1);
-        if(sate.equals("select"))
+        int value = driversList.get(index).getRating();
+        if(sate.equals("select") && selectedStar1.getVisibility()==View.INVISIBLE){
             selectedStar1.setVisibility(View.VISIBLE);
-        else
+            driversList.get(index).setRating(value+1);
+        }else if(sate.equals("unSelect") && selectedStar1.getVisibility()==View.VISIBLE){
             selectedStar1.setVisibility(View.INVISIBLE);
+            driversList.get(index).setRating(value-1);
+        }else if(sate.equals("null")){
+            selectedStar1.setVisibility(View.VISIBLE);
+        }
     }
 
-    private void setSecondStar(String sate){
+    private void setSecondStar(String sate, int index){
         ImageView selectedStar2 = dialog.findViewById(R.id.selected_star_2);
-        if(sate.equals("select"))
+        int value = driversList.get(index).getRating();
+        if(sate.equals("select") && selectedStar2.getVisibility()==View.INVISIBLE){
             selectedStar2.setVisibility(View.VISIBLE);
-        else
+            driversList.get(index).setRating(value+1);
+        }else if(sate.equals("unSelect") && selectedStar2.getVisibility()==View.VISIBLE){
             selectedStar2.setVisibility(View.INVISIBLE);
+            driversList.get(index).setRating(value-1);
+        }else if(sate.equals("null")){
+            selectedStar2.setVisibility(View.VISIBLE);
+        }
     }
 
-    private void setThirdStar(String sate){
+    private void setThirdStar(String sate, int index){
         ImageView selectedStar3 = dialog.findViewById(R.id.selected_star_3);
-        if(sate.equals("select"))
+        int value = driversList.get(index).getRating();
+        if(sate.equals("select") && selectedStar3.getVisibility()==View.INVISIBLE){
             selectedStar3.setVisibility(View.VISIBLE);
-        else
+            driversList.get(index).setRating(value + 1);
+        }else if(sate.equals("unSelect") && selectedStar3.getVisibility()==View.VISIBLE){
             selectedStar3.setVisibility(View.INVISIBLE);
+            driversList.get(index).setRating(value-1);
+        }else if(sate.equals("null")){
+            selectedStar3.setVisibility(View.VISIBLE);
+        }
     }
 
-    private void setFourthStar(String sate){
+    private void setFourthStar(String sate, int index){
         ImageView selectedStar4 = dialog.findViewById(R.id.selected_star_4);
-        if(sate.equals("select"))
+        int value = driversList.get(index).getRating();
+        if(sate.equals("select") && selectedStar4.getVisibility()==View.INVISIBLE){
             selectedStar4.setVisibility(View.VISIBLE);
-        else
+            driversList.get(index).setRating(value + 1);
+        }else if(sate.equals("unSelect") && selectedStar4.getVisibility()==View.VISIBLE){
             selectedStar4.setVisibility(View.INVISIBLE);
+            driversList.get(index).setRating(value - 1);
+        }else if(sate.equals("null")){
+            selectedStar4.setVisibility(View.VISIBLE);
+        }
     }
 
-    private void setFifthStar(String sate){
+    private void setFifthStar(String sate, int index){
         ImageView selectedStar5 = dialog.findViewById(R.id.selected_star_5);
-        if(sate.equals("select"))
+        int value = driversList.get(index).getRating();
+        if(sate.equals("select") && selectedStar5.getVisibility()==View.INVISIBLE){
             selectedStar5.setVisibility(View.VISIBLE);
-        else
+            driversList.get(index).setRating(value + 1);
+        }else if(sate.equals("unSelect") && selectedStar5.getVisibility()==View.VISIBLE){
             selectedStar5.setVisibility(View.INVISIBLE);
+            driversList.get(index).setRating(value - 1);
+        }else if(sate.equals("null")){
+            selectedStar5.setVisibility(View.VISIBLE);
+        }
     }
 }

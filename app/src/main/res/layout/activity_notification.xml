@@ -4,7 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Activities.NotificationActivity"
-    android:clipToPadding="true">
+    android:clipToPadding="true"
+    android:animateLayoutChanges="true"
+    >
 
     <LinearLayout
         android:layout_width="match_parent"

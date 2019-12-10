@@ -5,6 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:clipToPadding="true"
     xmlns:tools="http://schemas.android.com/tools"
+    android:animateLayoutChanges="true"
     tools:context=".FragmentsAddNewDriver.ChoosePickUpLocationFragment">
 
 
@@ -74,28 +75,31 @@
             android:layout_marginBottom="20dp"
             android:layout_marginLeft="15dp"
             android:layout_marginRight="15dp"
+            android:background="#55e9e9e9"
+
             android:gravity="center"
             android:orientation="vertical"
             android:elevation="2dp"
             >
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
-                android:background="@drawable/bg_customer_maps_drivers_list"
-                android:gravity="center"
-                android:padding="4dp"
-                android:text="Drivers Online"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-                android:textColor="#FFFFFF"
-                android:textStyle="bold" />
+<!--            <TextView-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginBottom="5dp"-->
+<!--                android:background="@drawable/bg_customer_maps_drivers_list"-->
+<!--                android:gravity="center"-->
+<!--                android:padding="4dp"-->
+<!--                android:text="Drivers Online"-->
+<!--                android:textAppearance="@style/TextAppearance.AppCompat.Body1"-->
+<!--                android:textColor="#FFFFFF"-->
+<!--                android:textStyle="bold" />-->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_customer_map"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
+                android:padding="10dp"
                 />
         </LinearLayout>
     <fragment

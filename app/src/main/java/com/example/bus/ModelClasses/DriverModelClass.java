@@ -4,7 +4,7 @@ package com.example.bus.ModelClasses;
 public class DriverModelClass {
     private String id, name, number, dutyAt, vehicleType;
     private String arrivalTime = "3 min";
-    private int vehicleCapacity, seatsAvailable;
+    private int vehicleCapacity, seatsAvailable, rating , averageRating;
 
 
     public DriverModelClass(String id, String name, String number, String dutyAt, String vehicalType, int vehicalCapacity, int seatsAvailable) {
@@ -47,6 +47,21 @@ public class DriverModelClass {
 
     public String getArrivalTime(){return arrivalTime;}
 
+    public void setRating(int rating){
+        this.rating = rating;
+    }
+
+    public int getRating(){
+        return rating;
+    }
+
+    public void setAverageRating(int rating){
+        this.averageRating = rating;
+    }
+
+    public int getAverageRating(){
+        return averageRating;
+    }
 
 
 }

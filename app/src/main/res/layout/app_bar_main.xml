@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:clipToPadding="true"
+    android:animateLayoutChanges="true"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".Activities.ProducerMapsActivity">
 
@@ -145,7 +146,7 @@
                     android:clipToPadding="true"
                     android:layout_alignParentBottom="true"
                     app:behavior_hideable="true"
-                    app:behavior_peekHeight="50dp"
+                    app:behavior_peekHeight="60dp"
                     android:visibility="gone"
                     app:layout_behavior="@string/bottom_sheet_behavior">
 

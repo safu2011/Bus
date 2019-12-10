@@ -4,6 +4,8 @@
     android:layout_height="match_parent"
     android:clipToPadding="true"
     xmlns:tools="http://schemas.android.com/tools"
+    android:animateLayoutChanges="true"
+
     tools:context=".FragmentsAddNewDriver.ChoosePickUpLocationFragment">
 
 

@@ -7,7 +7,9 @@
     android:orientation="vertical"
     android:weightSum="1"
     android:clipToPadding="true"
-    android:background="#efefef">
+    android:background="#efefef"
+    android:animateLayoutChanges="true"
+    >
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar_assessment_questionnaires"
         android:layout_width="match_parent"

@@ -7,7 +7,9 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:theme="@style/ThemeOverlay.AppCompat.Dark"
     android:background="#000000"
-    android:weightSum="1">
+    android:weightSum="1"
+    android:animateLayoutChanges="true"
+    >
 
     <LinearLayout
         android:layout_width="match_parent"

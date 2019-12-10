@@ -327,26 +327,30 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private String calculateArrivalTime(LatLng customerlatLng, LatLng myLatlang, double avgSpeed) {
-        Location mylocation = new Location("");
-        mylocation.setLatitude(myLatlang.latitude);
-        mylocation.setLongitude(myLatlang.longitude);
+        if(myLatlang!=null){
+            Location mylocation = new Location("");
+            mylocation.setLatitude(myLatlang.latitude);
+            mylocation.setLongitude(myLatlang.longitude);
 
-        Location targetLoaction = new Location("");
-        targetLoaction.setLatitude(customerlatLng.latitude);
-        targetLoaction.setLongitude(customerlatLng.longitude);
+            Location targetLoaction = new Location("");
+            targetLoaction.setLatitude(customerlatLng.latitude);
+            targetLoaction.setLongitude(customerlatLng.longitude);
 
-        double distance = mylocation.distanceTo(targetLoaction);
+            double distance = mylocation.distanceTo(targetLoaction);
 
-        double distanceInKilometer = distance * 0.001;
-        double estimatedTimeInHours = distanceInKilometer / avgSpeed;
-        double estimatedTimeInMinitues = estimatedTimeInHours * 60;
+            double distanceInKilometer = distance * 0.001;
+            double estimatedTimeInHours = distanceInKilometer / avgSpeed;
+            double estimatedTimeInMinitues = estimatedTimeInHours * 60;
 
-        if (estimatedTimeInMinitues < 1) {
-           return new DecimalFormat("##").format(estimatedTimeInMinitues * 60) + " sec";
-        } else if (estimatedTimeInMinitues > 60) {
-            return new DecimalFormat("##.#").format(estimatedTimeInMinitues / 60) + " hour";
-        } else {
-            return new DecimalFormat("##.#").format(estimatedTimeInMinitues) + " min";
+            if (estimatedTimeInMinitues < 1) {
+               return new DecimalFormat("##").format(estimatedTimeInMinitues * 60) + " sec";
+            } else if (estimatedTimeInMinitues > 60) {
+                return new DecimalFormat("##.#").format(estimatedTimeInMinitues / 60) + " hour";
+            } else {
+                return new DecimalFormat("##.#").format(estimatedTimeInMinitues) + " min";
+            }
+        }else{
+            return "Estimating";
         }
     }
 

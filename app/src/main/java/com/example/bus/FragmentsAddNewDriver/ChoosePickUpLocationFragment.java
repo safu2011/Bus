@@ -212,8 +212,10 @@ public class ChoosePickUpLocationFragment extends Fragment implements OnMapReady
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        String address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+        String address = "Are you sure ?";
+        if(addresses.get(0).getAddressLine(0) != null) {
+             address = addresses.get(0).getAddressLine(0); // If any additional address line present than only, check with max available address lines by getMaxAddressLineIndex()
+        }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 

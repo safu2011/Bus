@@ -5,7 +5,8 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".Activities.LoginActivity"
-    android:background="#66EEEEEE">
+    android:background="#66EEEEEE"    android:animateLayoutChanges="true"
+    >
     <LinearLayout
         android:id="@+id/ll_loading_loging"
         android:layout_width="match_parent"

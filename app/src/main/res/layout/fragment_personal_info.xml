@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".InfoFragmentUi.ProviderPersonalInfoFragment"
-    android:animateLayoutChanges="true">
+    android:animateLayoutChanges="true"
+    >
 
     <LinearLayout
         android:id="@+id/ly_no_internet_personal_info_fragment"
