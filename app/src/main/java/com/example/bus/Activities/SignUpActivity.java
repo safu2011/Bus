@@ -34,8 +34,8 @@ import java.util.Collections;
 import java.util.List;
 
 public class SignUpActivity extends AppCompatActivity {
-    private LinearLayout loadingScreen;
-    private EditText etfirstName, etlastName, etphoneNumber, etDutyAtInstitutionName, etSeatingCapacity;
+    private LinearLayout loadingScreen, lyUserInfo, lyAdminInfo;
+    private EditText etfirstName, etlastName, etphoneNumber, etDutyAtInstitutionName, etSeatingCapacity, etFullNameAdmin;
     private Spinner spinnerVehicalType, spinnerUserType;
     private Button btnProceed;
     private CountryCodePicker countryCodePicker;
@@ -79,15 +79,25 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void checkAllFields() {
-        if (etfirstName.getText().toString().trim().equals("")) {
-            etfirstName.setError("Enter First Name");
-            return;
+        if(lyUserInfo.getVisibility()==View.VISIBLE){
+            if (etfirstName.getText().toString().trim().equals("")) {
+                etfirstName.setError("Enter First Name");
+                return;
+            }
+            if (etlastName.getText().toString().trim().equals("")) {
+                etlastName.setError("Enter Last Name");
+                return;
+            } else {
+                fullName = etfirstName.getText().toString() + " " + etlastName.getText().toString();
+            }
         }
-        if (etlastName.getText().toString().trim().equals("")) {
-            etlastName.setError("Enter Last Name");
-            return;
-        } else {
-            fullName = etfirstName.getText().toString() + " " + etlastName.getText().toString();
+        if(lyAdminInfo.getVisibility() == View.VISIBLE){
+            if (etFullNameAdmin.getText().toString().trim().equals("")) {
+                etFullNameAdmin.setError("Enter Institute Name");
+                return;
+            } else {
+                fullName = etFullNameAdmin.getText().toString();
+            }
         }
         if (lyProducerRelatedInfo.getVisibility() == View.VISIBLE) {
             if (etDutyAtInstitutionName.getText().toString().trim().equals("")) {
@@ -139,10 +149,23 @@ public class SignUpActivity extends AppCompatActivity {
                     editor.putString(getString(R.string.user_type), "Producer");
                     editor.commit();
                     startActivity(new Intent(SignUpActivity.this, ProducerMapsActivity.class));
+                } else if(lyAdminInfo.getVisibility() == View.VISIBLE){
+                    myRef = myRef.child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                    myRef.child("Name").setValue(fullName);
+                    myRef.child("Phone Number").setValue(phoneNumber);
+                    SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                            getString(R.string.user_type), Context.MODE_PRIVATE);
+                    editor = sharedPref.edit();
+                    editor.putString(getString(R.string.user_type), "Admin");
+                    editor.commit();
+                    startActivity(new Intent(SignUpActivity.this, AdminActivity.class));
                 } else {
                     myRef = myRef.child(FirebaseAuth.getInstance().getCurrentUser().getUid());
                     myRef.child("Name").setValue(fullName);
                     myRef.child("Phone Number").setValue(phoneNumber);
+                    SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                            getString(R.string.user_type), Context.MODE_PRIVATE);
+                    editor = sharedPref.edit();
                     editor.putString(getString(R.string.user_type), "Consumer");
                     editor.commit();
                     startActivity(new Intent(SignUpActivity.this, ConsumerActivity.class));
@@ -174,6 +197,9 @@ public class SignUpActivity extends AppCompatActivity {
         btnProceed = findViewById(R.id.btn_proceed_signup);
         countryCodePicker = findViewById(R.id.ccp_signup);
         userTypeList = getResources().getStringArray(R.array.user_type);
+        lyUserInfo = findViewById(R.id.ly_sign_up_user_info);
+        lyAdminInfo = findViewById(R.id.ly_sign_up_admin_info);
+        etFullNameAdmin = findViewById(R.id.et_signup_admin_name);
     }
 
     private void setAdapterForSpinner() {
@@ -188,10 +214,19 @@ public class SignUpActivity extends AppCompatActivity {
         spinnerUserType.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                if (userTypeList[i].equals("Producer"))
+                if (userTypeList[i].equals("Producer")){
                     lyProducerRelatedInfo.setVisibility(View.VISIBLE);
-                else
+                     lyUserInfo.setVisibility(View.VISIBLE);
+                     lyAdminInfo.setVisibility(View.GONE);
+            }else if(userTypeList[i].equals("Consumer")) {
                     lyProducerRelatedInfo.setVisibility(View.GONE);
+                    lyAdminInfo.setVisibility(View.GONE);
+                    lyUserInfo.setVisibility(View.VISIBLE);
+                }else{
+                    lyProducerRelatedInfo.setVisibility(View.GONE);
+                    lyUserInfo.setVisibility(View.GONE);
+                    lyAdminInfo.setVisibility(View.VISIBLE);
+                }
             }
 
             @Override
@@ -206,13 +241,14 @@ public class SignUpActivity extends AppCompatActivity {
         // Read from the database
         if (userTypeList[spinnerUserType.getSelectedItemPosition()].equals("Producer"))
             myRef = FirebaseDatabase.getInstance().getReference("Producers List");
-        else
+        else if(userTypeList[spinnerUserType.getSelectedItemPosition()].equals("Consumer"))
             myRef = FirebaseDatabase.getInstance().getReference("Consumers List");
+        else
+            myRef = FirebaseDatabase.getInstance().getReference("Admins List");
+
         myRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
                     String phoneNumber = ds.child("Phone Number").getValue(String.class);
                     if (checkPhoneNumber.equals(phoneNumber)) {
@@ -228,7 +264,6 @@ public class SignUpActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                // Failed to read value
             }
         });
     }

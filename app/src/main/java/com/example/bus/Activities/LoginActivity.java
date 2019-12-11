@@ -99,6 +99,10 @@ public class LoginActivity extends AppCompatActivity {
                         Toast.makeText(LoginActivity.this,"No Internet !!!",Toast.LENGTH_LONG).show();
                     }
 
+                } else if (userType.equals("Admin")){
+                    Intent intent = new Intent(LoginActivity.this, AdminActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
                 }
             }
         }
@@ -180,6 +184,12 @@ public class LoginActivity extends AppCompatActivity {
                     Intent intent = new Intent(LoginActivity.this, ProducerMapsActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
+                } else if(userTypeList[spinnerUserType.getSelectedItemPosition()].equals("Administration")){
+                    editor.putString(getString(R.string.user_type), "Admin");
+                    editor.commit();
+                    Intent intent = new Intent(LoginActivity.this, AdminActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
                 } else {
                     editor.putString(getString(R.string.user_type), "Consumer");
                     editor.commit();
@@ -237,8 +247,10 @@ public class LoginActivity extends AppCompatActivity {
 
         if (userTypeList[spinnerUserType.getSelectedItemPosition()].equals("Producer"))
             myRef = FirebaseDatabase.getInstance().getReference("Producers List");
-        else
+        else if(userTypeList[spinnerUserType.getSelectedItemPosition()].equals("Consumer"))
             myRef = FirebaseDatabase.getInstance().getReference("Consumers List");
+        else
+            myRef = FirebaseDatabase.getInstance().getReference("Admins List");
 
         myRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -359,8 +371,7 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        //mLocationPermissionGranted = false;
-        // If request is cancelled, the result arrays are empty.
+
         if (requestCode == RC_PERMISSION_ALL) {
             if (permissions.length > 0 && permissions[0].equals(android.Manifest.permission.READ_EXTERNAL_STORAGE) && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 recreate();
@@ -379,8 +390,6 @@ public class LoginActivity extends AppCompatActivity {
             }
         }
 
-        //      donot allow the onmap raedy proceed unless the permissions are granted and gps is on
-//
     }
 
 

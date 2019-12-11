@@ -14,7 +14,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import android.util.Log;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,6 +45,7 @@ public class DriversInfoActivity extends AppCompatActivity {
     private ArrayList<DriverModelClass> driversList;
     private LinearLayout loadingScreen;
     private Dialog dialog;
+    private String rootRefNode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +54,9 @@ public class DriversInfoActivity extends AppCompatActivity {
         driversList = new ArrayList<>();
         recyclerView();
         showLoadingScreen();
-        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference("Consumers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Drivers");
+        rootRefNode = getIntent().getStringExtra("Parent node");  // for reusability of activity of admin and parent
+        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference(rootRefNode).child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Drivers");
+//      DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference("Consumers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Drivers");
         rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -65,8 +68,8 @@ public class DriversInfoActivity extends AppCompatActivity {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 int vehicleOccupiedSeats = dataSnapshot.child("Seats Occupied").getValue(int.class);
-                                int vehicalCapacity =dataSnapshot.child("Capacity").getValue(int.class);
-                                int seatsAvailable = vehicalCapacity - vehicleOccupiedSeats;
+                                int vehicleCapacity =dataSnapshot.child("Capacity").getValue(int.class);
+                                int seatsAvailable = vehicleCapacity - vehicleOccupiedSeats;
                                 String id = dataSnapshot.getKey();
                                 String name = dataSnapshot.child("Name").getValue(String.class);
                                 String phoneNumber = dataSnapshot.child("Phone Number").getValue(String.class);
@@ -75,7 +78,7 @@ public class DriversInfoActivity extends AppCompatActivity {
                                 int rating = 0;
                                 if(dataSnapshot.child("Customers").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Driver rating").exists())
                                     rating = dataSnapshot.child("Customers").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Driver rating").getValue(int.class);
-                                DriverModelClass driver = new DriverModelClass(id, name, phoneNumber, dutyAt, vehicalType, vehicalCapacity,seatsAvailable);
+                                DriverModelClass driver = new DriverModelClass(id, name, phoneNumber, dutyAt, vehicalType, vehicleCapacity,seatsAvailable);
                                 driver.setRating(rating);
                                 driversList.add(driver);
 
@@ -130,7 +133,10 @@ public class DriversInfoActivity extends AppCompatActivity {
                 viewHolderRt.removeDriver.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        removeDriver(i);
+                        if(rootRefNode.equals("Consumers List"))
+                            removeDriver(i);
+                        else
+                            removeDriverFromAdmin(i);
                     }
                 });
                 viewHolderRt.messageDriver.setOnClickListener(new View.OnClickListener() {
@@ -142,7 +148,10 @@ public class DriversInfoActivity extends AppCompatActivity {
                 viewHolderRt.rateDriver.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        rateDriver(i);
+                        if(rootRefNode.equals("Consumers List"))
+                            rateDriver(i);
+                        else
+                            checkDriverRating(i);
                     }
                 });
 
@@ -165,7 +174,7 @@ public class DriversInfoActivity extends AppCompatActivity {
             parentLy = itemView.findViewById(R.id.ly_drivers_info_blueprint);
             driver_name = itemView.findViewById(R.id.tv_driver_name);
             number = itemView.findViewById(R.id.tv_driver_number);
-            dutyAt = itemView.findViewById(R.id.tv_driver_duty_at);
+            dutyAt = itemView.findViewById(R.id.tv_driver_duty_at);;
             vehicalType = itemView.findViewById(R.id.tv_driver_vehical);
             removeDriver = itemView.findViewById(R.id.tv_driver_remove);
             messageDriver = itemView.findViewById(R.id.tv_driver_message);
@@ -255,6 +264,52 @@ public class DriversInfoActivity extends AppCompatActivity {
         dialog.show();
 
 
+    }
+
+    private void removeDriverFromAdmin(int index){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setMessage("Are you sure ?")
+                .setTitle("Remove Driver")
+                .setPositiveButton("Yes, Proceed ", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference("Producers List").child(driversList.get(index).getId());
+                        DatabaseReference ref1 = rootRef.child("Admin");
+                        if(isNetworkAvailable()){
+                            showLoadingScreen();
+                            ref1.removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    DatabaseReference ref2 = FirebaseDatabase.getInstance().getReference("Admins List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Drivers").child(driversList.get(index).getId());
+                                    ref2.removeValue();
+
+                                    driversList.remove(index);
+                                    adapter.notifyDataSetChanged();
+
+                                    hideLoadingScreen();
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    hideLoadingScreen();
+                                    Toast.makeText(DriversInfoActivity.this,"Opps Something went wrong",Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }else{
+                            Toast.makeText(DriversInfoActivity.this,"No Internet !!!",Toast.LENGTH_LONG).show();
+                        }
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.cancel();
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     private void rateDriver(int index){
@@ -503,4 +558,84 @@ public class DriversInfoActivity extends AppCompatActivity {
             selectedStar5.setVisibility(View.VISIBLE);
         }
     }
+
+    private void checkDriverRating(int i) {
+        dialog = new Dialog(DriversInfoActivity.this);
+        dialog.setContentView(R.layout.driver_ratting_blueprint);
+        TextView textView = dialog.findViewById(R.id.tv_rating_driver);
+        setDriverAvgRating(i);
+        textView.setText("Overall Rating");
+        Button cancelDialog = dialog.findViewById(R.id.btn_cancel_rating);
+        Button submitRating = dialog.findViewById(R.id.btn_submit_rating);
+        cancelDialog.setVisibility(View.INVISIBLE);
+        submitRating.setText("Close");
+
+
+        submitRating.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+    }
+
+    private void setDriverAvgRating(int i){
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Producers List").child(driversList.get(i).getId()).child("Customers");
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                int totalRating = 0;
+                int totalCustomers = 0;
+                long avgRating;
+                for(DataSnapshot ds : dataSnapshot.getChildren()){
+                    if(ds.child("Driver rating").exists()){
+                        totalRating  = totalRating + ds.child("Driver rating").getValue(int.class);
+                        totalCustomers++;
+                    }
+                }
+                int value = 0;
+                if(totalCustomers>0){
+                    avgRating = totalRating/totalCustomers;
+                    Math.round(avgRating);
+                }
+
+                    switch (value){
+                        case 1:
+                            setFirstStar("null",0);
+                            break;
+                        case 2:
+                            setFirstStar("null",0);
+                            setSecondStar("null",0);
+                            break;
+                        case 3:
+                            setFirstStar("null",0);
+                            setSecondStar("null",0);
+                            setThirdStar("null",0);
+                            break;
+                        case 4:
+                            setFirstStar("null",0);
+                            setSecondStar("null",0);
+                            setThirdStar("null",0);
+                            setFourthStar("null",0);
+                            break;
+                        case 5:
+                            setFirstStar("null",0);
+                            setSecondStar("null",0);
+                            setThirdStar("null",0);
+                            setFourthStar("null",0);
+                            setFifthStar("null",0);
+                            break;
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+    }
+
 }

@@ -79,7 +79,9 @@ public class ConsumerActivity extends AppCompatActivity implements View.OnClickL
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_drivers_info:
-                startActivity(new Intent(this, DriversInfoActivity.class));
+                Intent intent = new Intent(this,DriversInfoActivity.class);
+                intent.putExtra("Parent node","Consumers List");
+                startActivity(intent);
                 break;
             case R.id.btn_add_drivers:
                 startActivity(new Intent(this, AddNewDriverActivity.class));

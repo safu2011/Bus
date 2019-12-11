@@ -355,28 +355,7 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-//    public String calculateEstimatedTimeInMin(LatLng myLatLng, LatLng driver) {
-//        Location mylocation = new Location("");
-//        mylocation.setLatitude(myLatLng.latitude);
-//        mylocation.setLongitude(myLatLng.longitude);
-//
-//        Location targetlocation = new Location("");
-//        targetlocation.setLatitude(driver.latitude);
-//        targetlocation.setLongitude(driver.longitude);
-//
-//        double distanceInMeters = mylocation.distanceTo(targetlocation); // distance in meters
-//
-//        int speedMetersPerMinute = 500; // 30kph average speed at start
-//        double estematedDriveTimeInMinutes = distanceInMeters / speedMetersPerMinute;
-//        if (estematedDriveTimeInMinutes < 1) {
-//            return  new DecimalFormat("##.#").format(estematedDriveTimeInMinutes * 60) + " sec";
-//        } else if (estematedDriveTimeInMinutes > 60) {
-//            return  new DecimalFormat("##.#").format(estematedDriveTimeInMinutes / 60) + " hour";
-//        } else {
-//            return new DecimalFormat("##.#").format(estematedDriveTimeInMinutes) + " min";
-//        }
-//
-//    }
+
 
 
     private void setRecyclerView(){

@@ -79,6 +79,34 @@
                 android:layout_marginTop="30dp" >
 
                 <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="4dp"
+                    android:text="I am"
+                    android:textAppearance="@style/TextAppearance.AppCompat"
+                    android:textStyle="bold" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_edittext">
+
+                    <Spinner
+                        android:id="@+id/spinner_user_type"
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:layout_marginLeft="2dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginRight="2dp"
+                        android:paddingLeft="5dp" />
+                </FrameLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp">
+
+                <TextView
                     android:id="@+id/textView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -88,10 +116,13 @@
                     android:textStyle="bold" />
 
                 <LinearLayout
+                    android:id="@+id/ly_sign_up_user_info"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
                     android:orientation="horizontal"
-                    android:weightSum="2">
+                    android:weightSum="2"
+                    android:visibility="visible">
 
                     <EditText
                         android:id="@+id/et_signup_first_name"
@@ -122,6 +153,34 @@
                         android:inputType="textPersonName"
                         android:paddingLeft="5dp" />
                 </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ly_sign_up_admin_info"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <EditText
+                            android:id="@+id/et_signup_admin_name"
+                            android:layout_width="0dp"
+                            android:layout_height="45dp"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginTop="2dp"
+                            android:layout_marginRight="2dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_edittext"
+                            android:ems="10"
+                            android:focusable="auto"
+                            android:hint="Institute Name"
+                            android:inputType="textPersonName"
+                            android:paddingLeft="5dp" />
+
+                    </LinearLayout>
+
+
+                </RelativeLayout>
 
 
                 <TextView
@@ -168,29 +227,6 @@
 
                 </LinearLayout>
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="4dp"
-                    android:layout_marginTop="6dp"
-                    android:text="User Type"
-                    android:textAppearance="@style/TextAppearance.AppCompat"
-                    android:textStyle="bold" />
-
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_edittext">
-
-                    <Spinner
-                        android:id="@+id/spinner_user_type"
-                        android:layout_width="match_parent"
-                        android:layout_height="45dp"
-                        android:layout_marginLeft="2dp"
-                        android:layout_marginTop="2dp"
-                        android:layout_marginRight="2dp"
-                        android:paddingLeft="5dp" />
-                </FrameLayout>
 
                 <LinearLayout
                     android:id="@+id/ly_producer_related"

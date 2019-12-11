@@ -2,6 +2,7 @@ package com.example.bus.Activities;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -277,7 +278,6 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
                     //ask to quit trip first
                 }
             } else {
-
                 if (isNetworkAvailable()) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     builder.setMessage("Are you sure ?")
@@ -311,7 +311,35 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
                 }
 
             }
+        }else if(id == R.id.nav_shareId){
+            Dialog dialog = new Dialog(ProducerMapsActivity.this);
+            dialog.setContentView(R.layout.share_driver_id_blueprint);
+            Button cancelDialog = dialog.findViewById(R.id.btn_cancel_share_driver_id);
+            Button submitRating = dialog.findViewById(R.id.btn_share_driver_id);
+            TextView textView = dialog.findViewById(R.id.tv_share_driver_id);
+
+            textView.setText(FirebaseAuth.getInstance().getCurrentUser().getUid());
+
+            cancelDialog.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+                }
+            });
+
+            submitRating.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+                    sharingIntent.setType("text/plain");
+                    sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Driver connect id");
+                    sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, textView.getText().toString());
+                    startActivity(Intent.createChooser(sharingIntent, "Share text via"));
+                }
+            });
+            dialog.show();
         }
+
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;

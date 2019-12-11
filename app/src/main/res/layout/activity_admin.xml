@@ -3,12 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:clipToPadding="true"
     android:animateLayoutChanges="true"
-    tools:context=".Activities.ConsumerActivity">
+    android:clipToPadding="false"
+    tools:context=".Activities.AdminActivity">
 
     <LinearLayout
-        android:id="@+id/ll_loading_consumer"
+        android:id="@+id/ll_loading_admin"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#85000000"
@@ -25,7 +25,6 @@
             android:textColor="#ffffff"/>
 
         <ProgressBar
-            android:id="@+id/progress_bar_main"
             android:background="@drawable/progress"
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -36,46 +35,48 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        android:clipToPadding="false"
         android:gravity="center">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:weightSum="2"
+            android:elevation="22dp"
+           >
+            <Button
+                android:id="@+id/btn_drivers_info_admin"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="200dp"
+                android:text="My Drivers"
+                android:fontFamily="sans-serif-light"
+                android:textSize="26sp"
+                android:textColor="#ffffff"
                 android:gravity="center"
-                android:orientation="horizontal"
-                android:weightSum="2"
-                android:clipToPadding="true">
-                <Button
-                    android:id="@+id/btn_drivers_info"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="200dp"
-                    android:text="My Drivers"
-                    android:fontFamily="sans-serif-light"
-                    android:textSize="26sp"
-                    android:textColor="#ffffff"
-                    android:gravity="center"
-                    android:layout_marginRight="20dp"
-                    android:layout_marginLeft="10dp"
-                    android:drawableTop="@drawable/ic_supervisor_account_white_24dp"
-                    android:background="@drawable/check_driver_info_bg"
-                    android:elevation="8dp"
-                    android:textAllCaps="false"
-                    />
-                <Button
-                    android:id="@+id/btn_add_drivers"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="200dp"
-                    android:text="Add Driver"
-                    android:textColor="#ffffff"
-                    android:fontFamily="sans-serif-light"
-                    android:textSize="26sp"
-                    android:layout_marginRight="10dp"
-                    android:elevation="8dp"
-                    android:drawableTop="@drawable/ic_person_white_black_24dp"
-                    android:background="@drawable/add_driver_bg"
-                    android:textAllCaps="false"/>
-            </LinearLayout>
+                android:layout_marginRight="20dp"
+                android:layout_marginLeft="10dp"
+                android:drawableTop="@drawable/ic_supervisor_account_white_24dp"
+                android:background="@drawable/check_driver_info_bg"
+                android:elevation="22dp"
+                android:textAllCaps="false"
+                />
+            <Button
+                android:id="@+id/btn_add_drivers_admin"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="200dp"
+                android:text="Add a Driver"
+                android:textColor="#ffffff"
+                android:fontFamily="sans-serif-light"
+                android:textSize="26sp"
+                android:layout_marginRight="10dp"
+                android:elevation="8dp"
+                android:drawableTop="@drawable/ic_person_white_black_24dp"
+                android:background="@drawable/add_driver_bg"
+                android:textAllCaps="false"/>
+        </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -85,11 +86,11 @@
             android:clipToPadding="true"
             android:layout_marginTop="10dp">
             <Button
-                android:id="@+id/btn_track_driver"
+                android:id="@+id/btn_track_driver_admin"
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="200dp"
-                android:text="Track My Drivers"
+                android:text="Track Drivers"
                 android:fontFamily="sans-serif-light"
                 android:textSize="26sp"
                 android:textColor="#ffffff"
@@ -106,7 +107,7 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="200dp"
-                android:text="Manage Days Off"
+                android:text="Apply Leave"
                 android:textColor="#ffffff"
                 android:fontFamily="sans-serif-light"
                 android:textSize="26sp"
@@ -125,7 +126,7 @@
             android:clipToPadding="true"
             android:layout_marginTop="10dp">
             <Button
-                android:id="@+id/btn_logout"
+                android:id="@+id/btn_logout_admin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Log out"

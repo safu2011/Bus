@@ -12,6 +12,7 @@
     android:clickable="true"
     android:focusable="true"
     android:layout_margin="4dp"
+    android:elevation="16dp"
     android:paddingBottom="4dp"
     >
     <LinearLayout
@@ -160,7 +161,8 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_driver_info_button"
                 android:orientation="horizontal"
-                android:padding="8dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="6dp"
                 android:gravity="center">
 
                 <TextView
@@ -181,13 +183,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/ic_call_white_24dp"
-                    android:layout_marginRight="20dp"
+                    android:layout_marginRight="15dp"
                     />
                 <TextView
                     android:id="@+id/tv_driver_ratting"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/ic_star_white"
+
                     />
 
 

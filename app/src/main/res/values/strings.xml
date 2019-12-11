@@ -25,6 +25,7 @@
     <string-array name="user_type">
         <item>Consumer</item>
         <item>Producer</item>
+        <item>Administration</item>
     </string-array>
 
     <color name="green">#009688</color>

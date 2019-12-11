@@ -14,7 +14,7 @@
         android:id="@+id/appbar_assessment_questionnaires"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FFFFFF"
+        android:gravity="center"
         android:elevation="10dp"
         >
         <TextView

@@ -1,6 +1,7 @@
 package com.example.bus.InfoFragmentUi;
 
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 
 import android.content.Intent;
@@ -58,6 +59,7 @@ public class ProviderPersonalInfoFragment extends Fragment {
         super.onCreate(savedInstanceState);
     }
 
+    @SuppressLint("RestrictedApi")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         root = inflater.inflate(R.layout.fragment_personal_info, container, false);
@@ -98,6 +100,8 @@ public class ProviderPersonalInfoFragment extends Fragment {
             });
 
         }else{
+            fbEditPersonalInfo.setVisibility(View.GONE);
+            lyPersonalInfo.setVisibility(View.GONE);
             showNoInternetScreen();
             hideLoadingScreen();
         }
