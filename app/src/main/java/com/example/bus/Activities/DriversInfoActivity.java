@@ -155,6 +155,13 @@ public class DriversInfoActivity extends AppCompatActivity {
                     }
                 });
 
+                viewHolderRt.driverId.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        showDriverId(i);
+                    }
+                });
+
             }
 
             @Override
@@ -167,7 +174,7 @@ public class DriversInfoActivity extends AppCompatActivity {
 
     private class ViewHolderRt extends RecyclerView.ViewHolder {
         LinearLayout parentLy;
-        TextView driver_name, number, dutyAt, vehicalType, removeDriver, messageDriver, callDriver, vehicleCapacity, rateDriver;
+        TextView driver_name, number, dutyAt, vehicalType, removeDriver, messageDriver, callDriver, vehicleCapacity, rateDriver, driverId;
 
         public ViewHolderRt(View itemView) {
             super(itemView);
@@ -181,6 +188,7 @@ public class DriversInfoActivity extends AppCompatActivity {
             callDriver = itemView.findViewById(R.id.tv_driver_call);
             vehicleCapacity = itemView.findViewById(R.id.tv_driver_seats_available);
             rateDriver = itemView.findViewById(R.id.tv_driver_ratting);
+            driverId = itemView.findViewById(R.id.tv_driver_id);
         }
 
     }
@@ -340,6 +348,35 @@ public class DriversInfoActivity extends AppCompatActivity {
                 }
                 dialog.dismiss();
 
+            }
+        });
+        dialog.show();
+    }
+
+    private void showDriverId(int id){
+        Dialog dialog = new Dialog(DriversInfoActivity.this);
+        dialog.setContentView(R.layout.share_driver_id_blueprint);
+        Button cancelDialog = dialog.findViewById(R.id.btn_cancel_share_driver_id);
+        Button submitRating = dialog.findViewById(R.id.btn_share_driver_id);
+        TextView textView = dialog.findViewById(R.id.tv_share_driver_id);
+
+        textView.setText(driversList.get(id).getId());
+
+        cancelDialog.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+
+        submitRating.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+                sharingIntent.setType("text/plain");
+                sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "Driver connect id");
+                sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, textView.getText().toString());
+                startActivity(Intent.createChooser(sharingIntent, "Share text via"));
             }
         });
         dialog.show();
