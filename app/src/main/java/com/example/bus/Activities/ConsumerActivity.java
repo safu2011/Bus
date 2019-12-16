@@ -190,7 +190,9 @@ public class ConsumerActivity extends AppCompatActivity implements View.OnClickL
                             if(dataSnapshot.child("IsActive").getValue(Boolean.class) == true){
                                 showLoadingScreen();
                                 driverAvailable[0] = true;
-                                startActivity(new Intent(ConsumerActivity.this, ConsumerMaps.class));
+                                Intent intent = new Intent(ConsumerActivity.this, ConsumerMaps.class);
+                                intent.putExtra("Parent node","Consumers List");
+                                startActivity(intent);
                                 hideLoadingScreen();
                                 finish();
                             }else{

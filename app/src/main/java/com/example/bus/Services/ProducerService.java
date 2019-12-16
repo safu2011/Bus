@@ -117,6 +117,13 @@ public class ProducerService extends Service implements LocationListener {
             sendBroadcastMessageToUpdateMarker();
             calculateEstimatedTimeInMin(myLatlang, currentTargetedCustomer);
         }
+        int value = 0;
+        for (CustomerModelClass customer : customersList) {
+            if (customer.getCustomerDeliveryStatus().equals("Deliverd"))
+                value++;
+        }
+        if(isNetworkAvailable())
+            FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Children in vehicle").setValue(value+"/"+customersList.size());
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -126,11 +133,12 @@ public class ProducerService extends Service implements LocationListener {
             tts.stop();
             tts.shutdown();
         }
-        for(CustomerModelClass customer : customersList){
-            customer.setCustomerDeliveryStatus("Pending");
-        }
+//        for(CustomerModelClass customer : customersList){
+//            customer.setCustomerDeliveryStatus("Pending");
+//        }
         if (isNetworkAvailable()) {
             FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("IsActive").setValue(false);
+            FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Children in vehicle").removeValue();
         }
         super.onDestroy();
 
@@ -152,13 +160,19 @@ public class ProducerService extends Service implements LocationListener {
 
         if (currentTargetedCustomer != null && currentTargetedCustomer.getCustomerDistanceRemaining() <= currentTargetedCustomer.getNotificationDistance()) {
             // bus has arrived at target location
+            int value = 0;
             for (CustomerModelClass customer : customersList) {
                 if (customer.getCustomerName().equals(currentTargetedCustomer.getCustomerName())) {
                     customer.setCustomerDeliveryStatus("Deliverd");
                 }
+                if (customer.getCustomerDeliveryStatus().equals("Deliverd"))  // calculating children in vehicle at the time
+                    value++;
+
             }
+
             if(isNetworkAvailable()) {
                 FirebaseDatabase.getInstance().getReference("Consumers List").child(currentTargetedCustomer.getId()).child("Arrived").setValue("True");
+                FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Children in vehicle").setValue(value+"/"+customersList.size());
             }
             if (!allDeliverd()) {
                 currentTargetedCustomer = getNearestCustomer();
@@ -345,6 +359,7 @@ public class ProducerService extends Service implements LocationListener {
         }
         return true;
     }
+
     private boolean isNetworkAvailable() {
         NetworkInfo activeNetworkInfo = CONNECTIVITY_MANAGER.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();

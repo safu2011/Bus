@@ -2,7 +2,7 @@ package com.example.bus.ModelClasses;
 
 
 public class DriverModelClass {
-    private String id, name, number, dutyAt, vehicleType;
+    private String id, name, number, dutyAt, vehicleType, childrenInVehicle;
     private String arrivalTime = "3 min";
     private int vehicleCapacity, seatsAvailable, rating , averageRating;
 
@@ -61,6 +61,14 @@ public class DriverModelClass {
 
     public int getAverageRating(){
         return averageRating;
+    }
+
+    public void setChildrenInVehicle(String childrenInVehicle){
+        this.childrenInVehicle = childrenInVehicle;
+    }
+
+    public String getChildrenInVehicle(){
+        return childrenInVehicle;
     }
 
 

@@ -107,7 +107,7 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="200dp"
-                android:text="Apply Leave"
+                android:text="History"
                 android:textColor="#ffffff"
                 android:fontFamily="sans-serif-light"
                 android:textSize="26sp"

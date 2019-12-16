@@ -439,43 +439,43 @@ public class DriversInfoActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 setFirstStar("unSelect",index);
+                setSecondStar("unSelect",index);
+                setThirdStar("unSelect",index);
+                setFourthStar("unSelect",index);
+                setFifthStar("unSelect",index);
             }
         });
 
         selectedStar2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setFirstStar("unSelect",index);
                 setSecondStar("unSelect",index);
+                setThirdStar("unSelect",index);
+                setFourthStar("unSelect",index);
+                setFifthStar("unSelect",index);
             }
         });
 
         selectedStar3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setFirstStar("unSelect",index);
-                setSecondStar("unSelect",index);
                 setThirdStar("unSelect",index);
+                setFourthStar("unSelect",index);
+                setFifthStar("unSelect",index);
             }
         });
 
         selectedStar4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setFirstStar("unSelect",index);
-                setSecondStar("unSelect",index);
-                setThirdStar("unSelect",index);
                 setFourthStar("unSelect",index);
+                setFifthStar("unSelect",index);
             }
         });
 
         selectedStar5.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                setFirstStar("unSelect",index);
-                setSecondStar("unSelect",index);
-                setThirdStar("unSelect",index);
-                setFourthStar("unSelect",index);
                 setFifthStar("unSelect",index);
             }
         });

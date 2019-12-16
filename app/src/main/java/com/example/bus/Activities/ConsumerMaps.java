@@ -3,7 +3,6 @@ package com.example.bus.Activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
@@ -23,7 +22,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,7 +32,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.bus.ModelClasses.CustomerModelClass;
 import com.example.bus.ModelClasses.DriverModelClass;
 import com.example.bus.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -68,7 +65,7 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
     private LinearLayout loadingScreen;
     private RecyclerView recyclerView;
     private RecyclerView.Adapter<ViewHolderRtCustomerMaps> adapter;
-
+    private String rootRefNode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +83,7 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
         getlocation();
         driversMarkersList = new ArrayList<>();
         driversList = new ArrayList<>();
+        rootRefNode = getIntent().getStringExtra("Parent node");  // for reusability of activity of admin and parent
 
         findViewById(R.id.my_customer_location_btn).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -110,8 +108,8 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
-        InfoWindowAdapter infoWindowAdapter = new InfoWindowAdapter();
-        mMap.setInfoWindowAdapter(infoWindowAdapter);
+        InfoWindowAdapterForCustomer infoWindowAdapterForCustomer = new InfoWindowAdapterForCustomer();
+        mMap.setInfoWindowAdapter(infoWindowAdapterForCustomer);
         if(customerLatlang!=null) {
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(customerLatlang, 14f));
             customerMarker = mMap.addMarker(new MarkerOptions()
@@ -126,7 +124,10 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        startActivity(new Intent(ConsumerMaps.this,ConsumerActivity.class));
+        if(rootRefNode.equals("Consumers List"))
+            startActivity(new Intent(ConsumerMaps.this,ConsumerActivity.class));
+        else
+            startActivity(new Intent(ConsumerMaps.this,AdminActivity.class));
         finish();
     }
 
@@ -235,7 +236,7 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
     private void getLocationDrivers(){
         NetworkInfo networkInfo = ((ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
-            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Consumers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Drivers");
+            DatabaseReference reference = FirebaseDatabase.getInstance().getReference(rootRefNode).child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Drivers");
             reference.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -251,9 +252,12 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
                                     double driverLatitude = dataSnapshot.child("Latitude").getValue(Double.class);
                                     double driverLongitude = dataSnapshot.child("Longitude").getValue(Double.class);
                                     driversMarkersList.add(getMarker(driverName,driverLatitude,driverLongitude));
-                                    driversList.add(new DriverModelClass(ds.getKey(),driverName,"null",dutyat,"null",0,0));
+                                    DriverModelClass driver = new DriverModelClass(ds.getKey(),driverName,"null",dutyat,"null",0,0);
+                                    driver.setChildrenInVehicle(dataSnapshot.child("Children in vehicle").getValue(String.class));
+                                    driversList.add(driver);
                                     getArrivalTime(ds.getKey());
                                     adapter.notifyDataSetChanged();
+                                    setDriverLocationChangeListener(driver);
                                 }
                                 hideLoadingScreen();
                             }
@@ -272,7 +276,48 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
                     Toast.makeText(ConsumerMaps.this, "Opps Something went wrong !!!", Toast.LENGTH_SHORT).show();
                 }
             });
+
         }
+
+    }
+
+    private void setDriverLocationChangeListener(DriverModelClass driver){
+                DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Producers List").child(driver.getId());
+                ref.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        if(dataSnapshot.child("IsActive").getValue(Boolean.class) == true){
+                            double driverLatitude = dataSnapshot.child("Latitude").getValue(Double.class);
+                            double driverLongitude = dataSnapshot.child("Longitude").getValue(Double.class);
+                            for(Marker marker: driversMarkersList){
+                                if(marker.getTitle().equals(dataSnapshot.child("Name"))){
+                                    marker.setPosition(new LatLng(driverLatitude,driverLongitude));
+                                }
+                            }
+                        }else{
+                            String driverName = dataSnapshot.child("Name").getValue(String.class);
+                            for(Marker marker: driversMarkersList){
+                                if(marker.getTitle().equals(driverName)){
+                                    marker.remove();
+                                    driversMarkersList.remove(marker);
+                                    for(DriverModelClass driver : driversList){
+                                        if(driver.getName().equals(driverName)){
+                                            driversList.remove(driver);
+                                        }
+                                    }
+
+                                    adapter.notifyDataSetChanged();
+                                }
+                            }
+                        }
+                        hideLoadingScreen();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        Toast.makeText(ConsumerMaps.this, "Opps Something went wrong !!!", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void showLoadingScreen() {
@@ -410,23 +455,30 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    public class InfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
+    public class InfoWindowAdapterForCustomer implements GoogleMap.InfoWindowAdapter {
         private final View markerItemView;
-        public InfoWindowAdapter() {
+        public InfoWindowAdapterForCustomer() {
             markerItemView = ((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.marker_info_view_blueprint, null);  // 1
         }
         @Override
         public View getInfoWindow(Marker marker) { // 2
             for(int i=0 ;i<driversList.size(); i++){
                 if(marker.getTitle().equals(driversList.get(i).getName())){
-                    getArrivalTime(driversList.get(i).getId());
+
                     TextView tvDriverName = markerItemView.findViewById(R.id.tv_marker_info_driver_name);
                     TextView tvDriverInstitute = markerItemView.findViewById(R.id.tv_marker_info_driver_duty_at);
                     TextView tvDriverArrivingTime = markerItemView.findViewById(R.id.tv_marker_info_driver_arriving_time);
 
                     tvDriverName.setText("Name : "+driversList.get(i).getName());
                     tvDriverInstitute.setText("Institute : "+driversList.get(i).getDutyAt());
-                    tvDriverArrivingTime.setText("Arrival Time : "+driversList.get(i).getArrivalTime());
+
+                    if(rootRefNode.equals("Consumers List")){
+                        getArrivalTime(driversList.get(i).getId());
+                        tvDriverArrivingTime.setText("Arrival Time : "+driversList.get(i).getArrivalTime());
+                    }
+
+                    else
+                        tvDriverArrivingTime.setText("Children in vehicle : "+driversList.get(i).getChildrenInVehicle());
                 }
             }
             return markerItemView;  // 4

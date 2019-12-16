@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".InfoFragmentUi.ProviderPersonalInfoFragment"
     android:animateLayoutChanges="true"
+    android:clipToPadding="false"
     >
 
     <LinearLayout
@@ -61,15 +62,16 @@
         android:elevation="50dp"
         android:gravity="center_horizontal"
         android:orientation="vertical"
+        android:clipToPadding="false"
         android:visibility="visible">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="6dp"
-            android:background="@drawable/bg_personal_info_dp"
             android:gravity="center"
             android:orientation="vertical"
+            android:clipToPadding="false"
             android:paddingTop="6dp"
             android:paddingBottom="6dp">
 
@@ -77,38 +79,52 @@
                 android:id="@+id/iv_user_image_personal_image"
                 android:layout_width="150dp"
                 android:layout_height="150dp"
-                app:civ_border_color="#FFFFFF"
-                app:civ_border_width="2dp" />
+                app:civ_border_color="#000"
+                app:civ_border_width="2dp"
+                android:elevation="22dp"/>
 
             <TextView
                 android:id="@+id/tv_name_personal_info"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="_"
-                android:textColor="#ffffff"
+                android:textColor="#000"
                 android:textSize="16dp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-smallcaps"/>
 
             <TextView
                 android:id="@+id/tv_phoneNumber_personal_info"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="_"
-                android:textColor="#ffffff"
+                android:textColor="#000"
                 android:textSize="13dp" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#000"
+            android:layout_marginBottom="6dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:weightSum="1">
+            android:weightSum="1"
+            android:layout_marginRight="6dp"
+            android:layout_marginLeft="6dp"
+            android:background="#F0F0F0"
+            android:layout_marginBottom="3dp"
+          >
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.3"
-                android:gravity="center">
+                android:gravity="center"
+                >
 
                 <ImageView
                     android:layout_width="60dp"
@@ -127,16 +143,20 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Duty at"
-                    android:textColor="#000000" />
+                    android:textColor="#000000"
+                    android:textStyle="bold"
+                    />
 
                 <TextView
                     android:id="@+id/tv_duty_at_personal_info"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="6dp"
-                    android:text="_"
+                    android:text="-"
+                    android:textSize="16dp"
                     android:textColor="#000000"
-                    android:textStyle="bold" />
+                    android:fontFamily="sans-serif-smallcaps"
+                   />
 
             </LinearLayout>
 
@@ -146,17 +166,22 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:weightSum="1">
+            android:weightSum="1"
+            android:layout_marginRight="6dp"
+            android:layout_marginLeft="6dp"
+            android:background="#F0F0F0"
+            android:layout_marginBottom="3dp">
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.3"
-                android:gravity="center">
+                android:gravity="center"
+                >
 
                 <ImageView
                     android:layout_width="45dp"
-                    android:layout_height="45dp"
+                    android:layout_height="55dp"
                     android:src="@drawable/school_bus_icon_personal_info" />
             </LinearLayout>
 
@@ -171,7 +196,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Drives"
-                    android:textColor="#000000" />
+                    android:textColor="#000000"
+                    android:textStyle="bold"
+                    />
 
                 <TextView
                     android:id="@+id/tv_drives_personal_info"
@@ -179,8 +206,10 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="6dp"
                     android:text="_"
+                    android:textSize="16dp"
                     android:textColor="#000000"
-                    android:textStyle="bold" />
+                    android:fontFamily="sans-serif-smallcaps"
+                     />
 
             </LinearLayout>
 
@@ -190,7 +219,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:weightSum="1">
+            android:weightSum="1"
+            android:layout_marginRight="6dp"
+            android:layout_marginLeft="6dp"
+            android:background="#F0F0F0">
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -200,7 +232,7 @@
 
                 <ImageView
                     android:layout_width="50dp"
-                    android:layout_height="50dp"
+                    android:layout_height="55dp"
                     android:src="@drawable/customers_icon_personal_info" />
             </LinearLayout>
 
@@ -215,7 +247,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Total customers"
-                    android:textColor="#000000" />
+                    android:textColor="#000000"
+                    android:textStyle="bold"
+                   />
 
                 <TextView
                     android:id="@+id/tv_total_customers_personal_info"
@@ -224,7 +258,8 @@
                     android:layout_marginLeft="6dp"
                     android:text="_"
                     android:textColor="#000000"
-                    android:textStyle="bold" />
+                    android:fontFamily="sans-serif-smallcaps"                     android:textSize="16dp"
+                    />
 
             </LinearLayout>
 

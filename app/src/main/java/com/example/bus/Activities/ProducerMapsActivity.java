@@ -41,6 +41,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -69,7 +70,16 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.maps.DirectionsApi;
+import com.google.maps.GeoApiContext;
+import com.google.maps.errors.ApiException;
+import com.google.maps.model.DirectionsLeg;
+import com.google.maps.model.DirectionsResult;
+import com.google.maps.model.DirectionsRoute;
+import com.google.maps.model.Duration;
+import com.google.maps.model.TravelMode;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -855,9 +865,10 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
                     estimatedTargetCustomerTime.setText(intent.getStringExtra("estimated time"));
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLatlang.latitude - 0.00008, myLatlang.longitude), 22f));
                 } else if (intent.getAction().equals("update polyline")) {
-                    if (currentTargetedCustomer != null)
+                    if (currentTargetedCustomer != null) {
                         new FetchURL(context).execute(getUrl(myLatlang, new LatLng(currentTargetedCustomer.getCustomerLatitude(), currentTargetedCustomer.getCustomerLongitude()), "driving"), "driving");
-                    else
+                        //Log.d("mylog","possible time = "+ getDurationForRoute(myLatlang.latitude+","+myLatlang.longitude , currentTargetedCustomer.getCustomerLatitude()+","+currentTargetedCustomer.getCustomerLongitude()));
+                    }else
                         currentPolyline.remove();
                 }
             }
@@ -888,5 +899,39 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
         String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters + "&key=" + getResources().getString(R.string.directions_api);
         return url;
     }
+
+    public String getDurationForRoute(String origin, String destination){
+    // - We need a context to access the API
+    GeoApiContext geoApiContext = new GeoApiContext.Builder()
+            .apiKey(getResources().getString(R.string.directions_api))
+            .build();
+
+    Duration duration = null;
+    // - Perform the actual request
+        DirectionsResult directionsResult = null;
+        try {
+            directionsResult = DirectionsApi.newRequest(geoApiContext)
+                    .mode(TravelMode.DRIVING)
+                    .origin(origin)
+                    .destination(destination)
+                    .await();
+            // - Parse the result
+            DirectionsRoute route = directionsResult.routes[0];
+            DirectionsLeg leg = route.legs[0];
+            duration = leg.duration;
+
+        } catch (ApiException e) {
+            e.printStackTrace();
+            Log.d("mylog", "getDurationForRoute: "+e.getMessage());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            Log.d("mylog", "getDurationForRoute 2: "+e.getMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.d("mylog", "getDurationForRoute 3: "+e.getMessage());
+        }
+
+    return duration.humanReadable;
+}
 
 }

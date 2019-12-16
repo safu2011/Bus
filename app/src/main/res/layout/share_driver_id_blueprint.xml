@@ -33,7 +33,7 @@
             android:layout_marginRight="16dp"
             android:padding="16dp"
             android:gravity="center"
-            android:fontFamily="sans-serif-smallcaps"
+            android:fontFamily="sans-serif-thin"
             android:background="@drawable/bg_share_id"
             />
 

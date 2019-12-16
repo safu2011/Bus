@@ -4,9 +4,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -34,6 +36,7 @@ public class AdminActivity extends AppCompatActivity implements View.OnClickList
     private LinearLayout loadingScreen;
     final Boolean[] driverAvailable = {false,false};
     final int[] index = {0};
+    private BroadcastReceiver broadcastReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +47,7 @@ public class AdminActivity extends AppCompatActivity implements View.OnClickList
         findViewById(R.id.btn_add_drivers_admin).setOnClickListener(this);
         findViewById(R.id.btn_track_driver_admin).setOnClickListener(this);
         findViewById(R.id.btn_logout_admin).setOnClickListener(this);
+        broadcastReceiver = new AdminBroadcastReceiver();
     }
 
 
@@ -71,6 +75,21 @@ public class AdminActivity extends AppCompatActivity implements View.OnClickList
     }
 
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        IntentFilter intentFilters = new IntentFilter();
+        intentFilters.addAction("processing done");
+        registerReceiver(broadcastReceiver, intentFilters);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(broadcastReceiver);
+    }
+
+
     private boolean isNetworkAvailable() {
         NetworkInfo networkInfo = ((ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnected();
@@ -94,12 +113,11 @@ public class AdminActivity extends AppCompatActivity implements View.OnClickList
                             if(dataSnapshot.child("IsActive").getValue(Boolean.class) == true){
                                 showLoadingScreen();
                                 driverAvailable[0] = true;
-                                startActivity(new Intent(AdminActivity.this, ConsumerMaps.class));
+                                Intent intent = new Intent(AdminActivity.this,ConsumerMaps.class);
+                                intent.putExtra("Parent node","Admins List");
+                                startActivity(intent);
                                 hideLoadingScreen();
                                 finish();
-                            }else{
-                                hideLoadingScreen();
-                                Toast.makeText(AdminActivity.this,"No Active Drivers",Toast.LENGTH_SHORT).show();
                             }
                             Intent intent = new Intent("processing done");
                             sendBroadcast(intent);
@@ -157,4 +175,17 @@ public class AdminActivity extends AppCompatActivity implements View.OnClickList
         loadingScreen.setVisibility(View.GONE);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
     }
+
+    public class AdminBroadcastReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equals("processing done") && driverAvailable[0] == false && index[0]==driverAvailable.length) {
+                index[0] = 0;
+                hideLoadingScreen();
+                Toast.makeText(AdminActivity.this,"All drivers are offline",Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
 }
