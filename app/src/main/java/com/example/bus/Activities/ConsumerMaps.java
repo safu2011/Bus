@@ -248,11 +248,17 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
                             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                 if(dataSnapshot.child("IsActive").getValue(Boolean.class) == true){
                                     String driverName = dataSnapshot.child("Name").getValue(String.class);
-                                    String dutyat = dataSnapshot.child("Institute Name").getValue(String.class);
                                     double driverLatitude = dataSnapshot.child("Latitude").getValue(Double.class);
                                     double driverLongitude = dataSnapshot.child("Longitude").getValue(Double.class);
                                     driversMarkersList.add(getMarker(driverName,driverLatitude,driverLongitude));
-                                    DriverModelClass driver = new DriverModelClass(ds.getKey(),driverName,"null",dutyat,"null",0,0);
+
+                                    ArrayList<String> institueNameList = new ArrayList<>();
+                                    for(DataSnapshot ds1: dataSnapshot.child("Institute Name List").getChildren()){
+                                        institueNameList.add(ds1.getKey());
+                                    }
+
+
+                                    DriverModelClass driver = new DriverModelClass(ds.getKey(),driverName,"null",institueNameList,"null",0,0);
                                     driver.setChildrenInVehicle(dataSnapshot.child("Children in vehicle").getValue(String.class));
                                     driversList.add(driver);
                                     getArrivalTime(ds.getKey());

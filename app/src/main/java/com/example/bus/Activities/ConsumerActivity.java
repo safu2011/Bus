@@ -38,7 +38,7 @@ import java.util.ArrayList;
 
 public class ConsumerActivity extends AppCompatActivity implements View.OnClickListener {
     private BroadcastReceiver broadcastReceiver;
-    final Boolean[] driverAvailable = {false,false};
+    final Boolean[] driverAvailable = {false};
     final int[] index = {0};
     private LinearLayout loadingScreen;
 
@@ -179,8 +179,8 @@ public class ConsumerActivity extends AppCompatActivity implements View.OnClickL
         myRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
                 for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                    driverAvailable[1] = true;
                     driversList.add(ds.getKey());
                     DatabaseReference driversRef = FirebaseDatabase.getInstance().getReference("Producers List").child(ds.getKey());
                     driversRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -209,8 +209,13 @@ public class ConsumerActivity extends AppCompatActivity implements View.OnClickL
                         }
                     });
                 }
-                if(driverAvailable[1] == false)
-                    Toast.makeText(ConsumerActivity.this,"Add Driver",Toast.LENGTH_SHORT).show();
+                }
+                else{
+                    hideLoadingScreen();
+                    Toast.makeText(ConsumerActivity.this,"Add Driver First !!!",Toast.LENGTH_SHORT).show();
+                }
+
+
 
             }
 

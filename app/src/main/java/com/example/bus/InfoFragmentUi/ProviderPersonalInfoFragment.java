@@ -22,9 +22,12 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.bus.Activities.ProducerMapsActivity;
+import com.example.bus.Activities.SignUpActivity;
 import com.example.bus.ModelClasses.DriverModelClass;
 import com.example.bus.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -48,11 +51,14 @@ public class ProviderPersonalInfoFragment extends Fragment {
     private LinearLayout loadingScreen, lyPersonalInfo, lyEditPersonalInfo;
     private ImageView userImage, userImageUpdate;
     private TextView tvName, tvPhoneNumner, tvDutyAt, tvVehicalType, tvTotalCustomers, tvTotalCustomersUpdate, tvPhoneNumberUpdate;
-    private EditText etName, etDutyAt;
+    private EditText etName,etDutyAt;
     private Spinner spinnerVehicalType;
     private DriverModelClass myDriver;
     private FloatingActionButton fbEditPersonalInfo, fbUpdatePersonalInfo;
     private String[] vehicalTypeList;
+    private ArrayList<String> institueNamesList;
+    private RecyclerView.Adapter<ProviderPersonalInfoFragment.ViewHolderRt> adapter;
+    private RecyclerView rv_institute_name;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -77,12 +83,16 @@ public class ProviderPersonalInfoFragment extends Fragment {
                         String name = dataSnapshot.child("Name").getValue(String.class);
                         String phone_number = dataSnapshot.child("Phone Number").getValue(String.class);
                         String vehical_type = dataSnapshot.child("Vehical Type").getValue(String.class);
-                        String duty_at = dataSnapshot.child("Institute Name").getValue(String.class);
+
+                        ArrayList<String> institueNameList = new ArrayList<>();
+                        for(DataSnapshot ds1: dataSnapshot.child("Institute Name List").getChildren()){
+                            institueNameList.add(ds1.getKey());
+                        }
 
                         myDriver = new DriverModelClass(FirebaseAuth.getInstance().getCurrentUser().getUid(),
                                 name,
                                 phone_number,
-                                duty_at,
+                                institueNameList,
                                 vehical_type,
                                 0,
                                 0);
@@ -122,11 +132,11 @@ public class ProviderPersonalInfoFragment extends Fragment {
         tvTotalCustomers = root.findViewById(R.id.tv_total_customers_personal_info);
         tvTotalCustomersUpdate = root.findViewById(R.id.tv_total_customers_personal_info_update);
         etName = root.findViewById(R.id.et_name_personal_info);
-        etDutyAt = root.findViewById(R.id.et_duty_at_personal_info);
         spinnerVehicalType = root.findViewById(R.id.spinner_personal_info);
         fbEditPersonalInfo = root.findViewById(R.id.fb_edit_personal_info);
         fbUpdatePersonalInfo = root.findViewById(R.id.fb_update_personal_info);
-
+        rv_institute_name = root.findViewById(R.id.rv_personal_info_institute_name);
+        etDutyAt = root.findViewById(R.id.et_personal_info_duty_at_Institution);
 
         vehicalTypeList = getResources().getStringArray(R.array.vehical_type);
 
@@ -143,8 +153,13 @@ public class ProviderPersonalInfoFragment extends Fragment {
         tvPhoneNumner.setText(myDriver.getNumber());
         tvPhoneNumberUpdate.setText(myDriver.getNumber());
 
-        tvDutyAt.setText(myDriver.getDutyAt());
-        etDutyAt.setText(myDriver.getDutyAt());
+        String dutyAt = "\n";
+        for(String name : myDriver.getDutyAt()){
+            dutyAt = dutyAt + name+"\n";
+        }
+        institueNamesList = myDriver.getDutyAt();
+
+        tvDutyAt.setText(dutyAt);
 
         tvVehicalType.setText(myDriver.getVehicleType());
 
@@ -164,6 +179,7 @@ public class ProviderPersonalInfoFragment extends Fragment {
         fbEditPersonalInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                recyclerView();
                 lyPersonalInfo.setVisibility(View.GONE);
                 lyEditPersonalInfo.setVisibility(View.VISIBLE);
                 fbEditPersonalInfo.hide();
@@ -174,12 +190,24 @@ public class ProviderPersonalInfoFragment extends Fragment {
         fbUpdatePersonalInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(!etName.getText().toString().trim().equals("") && !etDutyAt.getText().toString().trim().equals("")){
+                if(!etName.getText().toString().trim().equals("")){
                     if(isNetworkAvailable()){
                         String name = etName.getText().toString();
                         String vehicleType = vehicalTypeList[spinnerVehicalType.getSelectedItemPosition()];
-                        String dutyAt = etDutyAt.getText().toString();
-                        setNewValues(name, vehicleType, dutyAt);
+
+                        String institution_name = etDutyAt.getText().toString().trim();
+                        if (institution_name.equals("") && institueNamesList.size()==0) {
+                            etDutyAt.setError("Enter Institution Name");
+                            return;
+                        }else {
+                            if(!institution_name.equals("")){
+                                if(!institueNamesList.contains(institution_name)){
+                                    institueNamesList.add(institution_name);
+                                }
+                            }
+                        }
+
+                        setNewValues(name, vehicleType, institueNamesList);
                         lyPersonalInfo.setVisibility(View.VISIBLE);
                         lyEditPersonalInfo.setVisibility(View.GONE);
                         fbEditPersonalInfo.show();
@@ -199,18 +227,27 @@ public class ProviderPersonalInfoFragment extends Fragment {
         });
     }
 
-    private void setNewValues(final String name, final String vehicleType, final String dutyAt){
+    private void setNewValues(final String name, final String vehicleType, final ArrayList<String> dutyAt){
         showLoadingScreen();
         DatabaseReference myref = FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-       myref.child("Name").setValue(name);
-       myref.child("Vehical Type").setValue(vehicleType);
-       myref.child("Institute Name").setValue(dutyAt).addOnCompleteListener(new OnCompleteListener<Void>() {
+         myref.child("Vehical Type").setValue(vehicleType);
+        myref.child("Institute Name List").removeValue();
+        for(String value : dutyAt){
+            myref.child("Institute Name List").child(value).setValue("true");
+        }
+        myDriver.setDutyAt(institueNamesList);
+
+        myref.child("Name").setValue(name).addOnCompleteListener(new OnCompleteListener<Void>() {
            @Override
            public void onComplete(@NonNull Task<Void> task) {
                hideLoadingScreen();
                tvName.setText(name);
                tvVehicalType.setText(vehicleType);
-               tvDutyAt.setText(dutyAt);
+               String uptaedDutyAt = "\n";
+               for(String updatedName : myDriver.getDutyAt()){
+                   uptaedDutyAt = uptaedDutyAt + updatedName+"\n";
+               }
+               tvDutyAt.setText(uptaedDutyAt);
            }
        });
 
@@ -251,5 +288,52 @@ public class ProviderPersonalInfoFragment extends Fragment {
     public void hideLoadingScreen() {
         loadingScreen.setVisibility(View.GONE);
         getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+    }
+
+    private void recyclerView() {
+        rv_institute_name.setLayoutManager(new LinearLayoutManager(root.getContext()));
+        adapter = new RecyclerView.Adapter<ProviderPersonalInfoFragment.ViewHolderRt>() {
+
+            @Override
+            public ProviderPersonalInfoFragment.ViewHolderRt onCreateViewHolder(ViewGroup viewGroup, int ViewType) {
+                return new ProviderPersonalInfoFragment.ViewHolderRt(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.blueprint_institute_name, viewGroup, false));
+            }
+
+            @Override
+            public void onBindViewHolder(ProviderPersonalInfoFragment.ViewHolderRt viewHolderRt, final int i) {
+
+                viewHolderRt.instituteName.setText(institueNamesList.get(i));
+                viewHolderRt.ivButtonRemoveInstituteName.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        for(String instituteName : institueNamesList){
+                            if(instituteName.equals(institueNamesList.get(i))) {
+                                institueNamesList.remove(instituteName);
+                                adapter.notifyDataSetChanged();
+                            }
+                        }
+                    }
+                });
+
+            }
+
+            @Override
+            public int getItemCount() {
+                return institueNamesList.size();
+            }
+        };
+        rv_institute_name.setAdapter(adapter);
+    }
+
+    private class ViewHolderRt extends RecyclerView.ViewHolder {
+        TextView instituteName;
+        ImageView ivButtonRemoveInstituteName;
+        public ViewHolderRt(View itemView) {
+            super(itemView);
+            instituteName = itemView.findViewById(R.id.tv_blueprint_institute_name);
+            ivButtonRemoveInstituteName = itemView.findViewById(R.id.iv_button_remove_institute_name);
+
+        }
+
     }
 }

@@ -19,9 +19,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -73,12 +75,18 @@ public class DriversInfoActivity extends AppCompatActivity {
                                 String id = dataSnapshot.getKey();
                                 String name = dataSnapshot.child("Name").getValue(String.class);
                                 String phoneNumber = dataSnapshot.child("Phone Number").getValue(String.class);
-                                String dutyAt = dataSnapshot.child("Institute Name").getValue(String.class);
                                 String vehicalType = dataSnapshot.child("Vehical Type").getValue(String.class);
+
+                                ArrayList<String> institueNameList = new ArrayList<>();
+                                for(DataSnapshot ds1: dataSnapshot.child("Institute Name List").getChildren()){
+                                    institueNameList.add(ds1.getKey());
+                                }
+
+
                                 int rating = 0;
                                 if(dataSnapshot.child("Customers").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Driver rating").exists())
                                     rating = dataSnapshot.child("Customers").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Driver rating").getValue(int.class);
-                                DriverModelClass driver = new DriverModelClass(id, name, phoneNumber, dutyAt, vehicalType, vehicleCapacity,seatsAvailable);
+                                DriverModelClass driver = new DriverModelClass(id, name, phoneNumber, institueNameList, vehicalType, vehicleCapacity,seatsAvailable);
                                 driver.setRating(rating);
                                 driversList.add(driver);
 
@@ -120,9 +128,15 @@ public class DriversInfoActivity extends AppCompatActivity {
 
                 viewHolderRt.driver_name.setText(driversList.get(i).getName());
                 viewHolderRt.number.setText(driversList.get(i).getNumber());
-                viewHolderRt.dutyAt.setText(driversList.get(i).getDutyAt());
                 viewHolderRt.vehicalType.setText(driversList.get(i).getVehicleType());
                 viewHolderRt.vehicleCapacity.setText(driversList.get(i).getSeatsAvailable()+"");
+
+                if(driversList.get(i).getDutyAt().size()>1){
+                    viewHolderRt.dutyAt.setText("Show List");
+                    showInstitueListDialogBox(DriversInfoActivity.this,driversList.get(i).getDutyAt());
+                }else{
+                    viewHolderRt.dutyAt.setText(driversList.get(i).getDutyAt().get(0));
+                }
 
                 viewHolderRt.callDriver.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -615,6 +629,28 @@ public class DriversInfoActivity extends AppCompatActivity {
             }
         });
 
+        dialog.show();
+    }
+
+    private void showInstitueListDialogBox(Context context , ArrayList<String> institueNameList){
+        Dialog dialog = new Dialog(context);
+        dialog.setContentView(R.layout.dialogbox_institution_list);
+        ListView listView = dialog.findViewById(R.id.lv_dialog_box_institute_list);
+
+        ArrayAdapter<String> itemsAdapter =
+                new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, institueNameList);
+
+        listView.setAdapter(itemsAdapter);
+
+        Button btnBack = dialog.findViewById(R.id.btn_back_dialog_box_institute_list);
+
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+
+            }
+        });
         dialog.show();
     }
 

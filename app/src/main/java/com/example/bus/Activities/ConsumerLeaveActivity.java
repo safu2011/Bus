@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -14,7 +15,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,32 +54,38 @@ public class ConsumerLeaveActivity extends AppCompatActivity {
             reference.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                        showLoadingScreen();
-                        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Producers List").child(ds.getKey());
-                        ref.addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                if(dataSnapshot.exists()) {
-                                    String id = dataSnapshot.getKey();
-                                    String name = dataSnapshot.child("Name").getValue(String.class);
-                                    String phoneNumber = dataSnapshot.child("Phone Number").getValue(String.class);
-                                    String dutyAt = dataSnapshot.child("Institute Name").getValue(String.class);
-                                    String vehicleType = dataSnapshot.child("Vehical Type").getValue(String.class);
+                    if(dataSnapshot.exists()) {
+                        for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                            showLoadingScreen();
+                            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Producers List").child(ds.getKey());
+                            ref.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        String id = dataSnapshot.getKey();
+                                        String name = dataSnapshot.child("Name").getValue(String.class);
+                                        String phoneNumber = dataSnapshot.child("Phone Number").getValue(String.class);
+                                        String vehicleType = dataSnapshot.child("Vehical Type").getValue(String.class);
 
-                                    driversList.add(new DriverModelClass(id, name, phoneNumber, dutyAt, vehicleType,0,0));
+                                        ArrayList<String> institueNameList = new ArrayList<>();
+                                        for(DataSnapshot ds1: dataSnapshot.child("Institute Name List").getChildren()){
+                                            institueNameList.add(ds1.getKey());
+                                        }
 
-                                    adapter.notifyDataSetChanged();
-                                    hideLoadingScreen();
+                                        driversList.add(new DriverModelClass(id, name, phoneNumber, institueNameList, vehicleType,0,0));
+
+                                        adapter.notifyDataSetChanged();
+                                        hideLoadingScreen();
                                 }
 
-                            }
-
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-                                Toast.makeText(ConsumerLeaveActivity.this, "Opps Something went wrong !!!", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    Toast.makeText(ConsumerLeaveActivity.this, "Opps Something went wrong !!!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    }else{
+                        Toast.makeText(ConsumerLeaveActivity.this,"Add Drivers First !!!",Toast.LENGTH_LONG).show();
+                        hideLoadingScreen();
                     }
 
                 }
@@ -105,8 +115,14 @@ public class ConsumerLeaveActivity extends AppCompatActivity {
 
                 viewHolderRt.driver_name.setText(driversList.get(i).getName());
                 viewHolderRt.number.setText(driversList.get(i).getNumber());
-                viewHolderRt.dutyAt.setText(driversList.get(i).getDutyAt());
                 viewHolderRt.vehicleType.setText(driversList.get(i).getVehicleType());
+
+                if(driversList.get(i).getDutyAt().size()>1){
+                    viewHolderRt.dutyAt.setText("Show List");
+                    showInstitueListDialogBox(ConsumerLeaveActivity.this,driversList.get(i).getDutyAt());
+                }else{
+                    viewHolderRt.dutyAt.setText(driversList.get(i).getDutyAt().get(0));
+                }
 
 
                 viewHolderRt.ly_send_request.setOnClickListener(new View.OnClickListener() {
@@ -162,6 +178,28 @@ public class ConsumerLeaveActivity extends AppCompatActivity {
             ly_send_request = itemView.findViewById(R.id.ly_leave_request_send);
         }
 
+    }
+
+    private void showInstitueListDialogBox(Context context , ArrayList<String> institueNameList){
+        Dialog dialog = new Dialog(context);
+        dialog.setContentView(R.layout.dialogbox_institution_list);
+        ListView listView = dialog.findViewById(R.id.lv_dialog_box_institute_list);
+
+        ArrayAdapter<String> itemsAdapter =
+                new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, institueNameList);
+
+        listView.setAdapter(itemsAdapter);
+
+        Button btnBack = dialog.findViewById(R.id.btn_back_dialog_box_institute_list);
+
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+
+            }
+        });
+        dialog.show();
     }
 
 

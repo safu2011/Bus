@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -13,10 +14,12 @@ import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,7 +40,7 @@ public class AddDriverForAdminActivity extends AppCompatActivity implements View
     private TextView tvName, tvNumber, tvInstituteName, tvVehicalType;
     private LinearLayout lyDriverInfo;
     private String driverId = "null";
-    private ArrayList<String> myDriversIdList;
+    private ArrayList<String> myDriversIdList, institueNameList;
     private LinearLayout loadingScreen, lyDriverAdded;
 
     @Override
@@ -56,6 +59,7 @@ public class AddDriverForAdminActivity extends AppCompatActivity implements View
         findViewById(R.id.iv_search_add_driver_admin).setOnClickListener(this);
         findViewById(R.id.btn_add_driver_admin).setOnClickListener(this);
         myDriversIdList = new ArrayList<>();
+        institueNameList = new ArrayList<>();
 
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Admins List")
                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
@@ -104,7 +108,22 @@ public class AddDriverForAdminActivity extends AppCompatActivity implements View
                                     driverId = etDriverId.getText().toString().trim();
                                     tvName.setText(dataSnapshot.child("Name").getValue(String.class));
                                     tvNumber.setText(dataSnapshot.child("Phone Number").getValue(String.class));
-                                    tvInstituteName.setText(dataSnapshot.child("Institute Name").getValue(String.class));
+
+                                    for(DataSnapshot ds: dataSnapshot.child("Institute Name List").getChildren()){
+                                        institueNameList.add(ds.getKey());
+                                    }
+                                    if(institueNameList.size()>1){
+                                        tvInstituteName.setText("Show List");
+                                        tvInstituteName.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View view) {
+                                                showInstitueListDialogBox(AddDriverForAdminActivity.this,institueNameList);
+                                            }
+                                        });
+                                    }else{
+                                        tvInstituteName.setText(institueNameList.get(0));
+                                    }
+
                                     tvVehicalType.setText(dataSnapshot.child("Vehical Type").getValue(String.class));
                                     hideLoadingScreen();
                                     lyDriverInfo.setVisibility(View.VISIBLE);
@@ -180,6 +199,28 @@ public class AddDriverForAdminActivity extends AppCompatActivity implements View
     private boolean isNetworkAvailable() {
         NetworkInfo networkInfo = ((ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnected();
+    }
+
+    private void showInstitueListDialogBox(Context context ,ArrayList<String> institueNameList){
+        Dialog dialog = new Dialog(context);
+        dialog.setContentView(R.layout.dialogbox_institution_list);
+        ListView listView = dialog.findViewById(R.id.lv_dialog_box_institute_list);
+
+        ArrayAdapter<String> itemsAdapter =
+                new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, institueNameList);
+
+        listView.setAdapter(itemsAdapter);
+
+        Button btnBack = dialog.findViewById(R.id.btn_back_dialog_box_institute_list);
+
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+
+            }
+        });
+        dialog.show();
     }
 
 }

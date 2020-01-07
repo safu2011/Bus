@@ -1,17 +1,21 @@
 package com.example.bus.ModelClasses;
 
 
+import java.util.ArrayList;
+
 public class DriverModelClass {
-    private String id, name, number, dutyAt, vehicleType, childrenInVehicle;
+    private String id, name, number, vehicleType, childrenInVehicle;
     private String arrivalTime = "3 min";
     private int vehicleCapacity, seatsAvailable, rating , averageRating;
+    private ArrayList<String> instituteList;
 
 
-    public DriverModelClass(String id, String name, String number, String dutyAt, String vehicalType, int vehicalCapacity, int seatsAvailable) {
+
+    public DriverModelClass(String id, String name, String number, ArrayList<String> instituteList, String vehicalType, int vehicalCapacity, int seatsAvailable) {
         this.id = id;
         this.name = name;
         this.number = number;
-        this.dutyAt = dutyAt;
+        this.instituteList = instituteList;
         this.vehicleType = vehicalType;
         this.vehicleCapacity = vehicalCapacity;
         this.seatsAvailable = seatsAvailable;
@@ -29,8 +33,8 @@ public class DriverModelClass {
         return number;
     }
 
-    public String getDutyAt() {
-        return dutyAt;
+    public ArrayList<String> getDutyAt() {
+        return instituteList;
     }
 
     public String getVehicleType() {
@@ -69,6 +73,10 @@ public class DriverModelClass {
 
     public String getChildrenInVehicle(){
         return childrenInVehicle;
+    }
+
+    public void setDutyAt(ArrayList<String> list){
+        instituteList = list;
     }
 
 

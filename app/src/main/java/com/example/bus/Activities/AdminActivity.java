@@ -34,7 +34,7 @@ import java.util.ArrayList;
 
 public class AdminActivity extends AppCompatActivity implements View.OnClickListener {
     private LinearLayout loadingScreen;
-    final Boolean[] driverAvailable = {false,false};
+    final Boolean[] driverAvailable = {false};
     final int[] index = {0};
     private BroadcastReceiver broadcastReceiver;
 
@@ -102,35 +102,37 @@ public class AdminActivity extends AppCompatActivity implements View.OnClickList
         myRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                    driverAvailable[1] = true;
-                    driversList.add(ds.getKey());
-                    DatabaseReference driversRef = FirebaseDatabase.getInstance().getReference("Producers List").child(ds.getKey());
-                    driversRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            index[0]++;
-                            if(dataSnapshot.child("IsActive").getValue(Boolean.class) == true){
-                                showLoadingScreen();
-                                driverAvailable[0] = true;
-                                Intent intent = new Intent(AdminActivity.this,ConsumerMaps.class);
-                                intent.putExtra("Parent node","Admins List");
-                                startActivity(intent);
-                                hideLoadingScreen();
-                                finish();
+                if(dataSnapshot.exists()) {
+                    for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                        driversList.add(ds.getKey());
+                        DatabaseReference driversRef = FirebaseDatabase.getInstance().getReference("Producers List").child(ds.getKey());
+                        driversRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                index[0]++;
+                                if (dataSnapshot.child("IsActive").getValue(Boolean.class) == true) {
+                                    showLoadingScreen();
+                                    driverAvailable[0] = true;
+                                    Intent intent = new Intent(AdminActivity.this, ConsumerMaps.class);
+                                    intent.putExtra("Parent node", "Admins List");
+                                    startActivity(intent);
+                                    hideLoadingScreen();
+                                    finish();
+                                }
+                                Intent intent = new Intent("processing done");
+                                sendBroadcast(intent);
                             }
-                            Intent intent = new Intent("processing done");
-                            sendBroadcast(intent);
-                        }
 
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-                            Toast.makeText(AdminActivity.this,"Opps Something went wrong !!!",Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+                                Toast.makeText(AdminActivity.this, "Opps Something went wrong !!!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                }else{
+                    hideLoadingScreen();
+                    Toast.makeText(AdminActivity.this,"Add Driver First !!!",Toast.LENGTH_SHORT).show();
                 }
-                if(driverAvailable[1] == false)
-                    Toast.makeText(AdminActivity.this,"Add Driver",Toast.LENGTH_SHORT).show();
 
             }
 

@@ -1,7 +1,10 @@
 package com.example.bus.FragmentsAddNewDriver;
 
+import android.app.Dialog;
+import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -9,7 +12,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +45,8 @@ public class AvailableDriversFragment extends Fragment {
     private RecyclerView.Adapter<ViewHolderRt> adapter;
     private ArrayList<DriverModelClass> driversList;
     private LinearLayout loadingScreen;
+    private EditText etDriverID;
+    private ImageView ivSearchButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -46,9 +56,56 @@ public class AvailableDriversFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         root = inflater.inflate(R.layout.fragment_available_drivers, container, false);
+        etDriverID = root.findViewById(R.id.et_id_add_driver);
+        ivSearchButton = root.findViewById(R.id.iv_search_button_add_driver);
         driversList = new ArrayList<>();
-
         DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("Producers List");
+
+        ivSearchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String id = etDriverID.getText().toString().trim();
+                if(!id.equals("")){
+                    DatabaseReference newRef = myRef.child(id);
+                    newRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            if (dataSnapshot.exists()) {
+                                int vehicleOccupiedSeats = dataSnapshot.child("Seats Occupied").getValue(int.class);
+                                int vehicalCapacity = dataSnapshot.child("Capacity").getValue(int.class);
+                                int seatsAvailable = vehicalCapacity - vehicleOccupiedSeats;
+                                if (vehicalCapacity - vehicleOccupiedSeats > 0) {
+                                    String id = dataSnapshot.getKey();
+                                    String name = dataSnapshot.child("Name").getValue(String.class);
+                                    String phoneNumber = dataSnapshot.child("Phone Number").getValue(String.class);
+
+                                    ArrayList<String> institueNameList = new ArrayList<>();
+                                    for(DataSnapshot ds: dataSnapshot.child("Institute Name List").getChildren()){
+                                        institueNameList.add(ds.getKey());
+                                    }
+
+                                    String vehicalType = dataSnapshot.child("Vehical Type").getValue(String.class);
+
+                                    driversList.clear();
+                                    driversList.add(new DriverModelClass(id, name, phoneNumber, institueNameList, vehicalType, vehicalCapacity, seatsAvailable));
+                                    adapter.notifyDataSetChanged();
+                                }else{
+                                    Toast.makeText(root.getContext(),"The driver vehicle is fully booked",Toast.LENGTH_LONG).show();
+                                }
+                            }
+                        }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+                }else{
+                    etDriverID.setError("Please enter Driver Id");
+                }
+            }
+        });
+
+
         showLoadingScreen();
         myRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -63,10 +120,13 @@ public class AvailableDriversFragment extends Fragment {
                         String id = ds.getKey();
                         String name = ds.child("Name").getValue(String.class);
                         String phoneNumber = ds.child("Phone Number").getValue(String.class);
-                        String dutyAt = ds.child("Institute Name").getValue(String.class);
+                        ArrayList<String> institueNameList = new ArrayList<>();
+                        for(DataSnapshot ds1: ds.child("Institute Name List").getChildren()){
+                            institueNameList.add(ds1.getKey());
+                        }
                         String vehicalType = ds.child("Vehical Type").getValue(String.class);
 
-                        driversList.add(new DriverModelClass(id, name, phoneNumber, dutyAt, vehicalType, vehicalCapacity,seatsAvailable));
+                        driversList.add(new DriverModelClass(id, name, phoneNumber, institueNameList, vehicalType, vehicalCapacity,seatsAvailable));
 
                     }
                 }
@@ -99,7 +159,19 @@ public class AvailableDriversFragment extends Fragment {
 
                 viewHolderRt.driver_name.setText(driversList.get(i).getName());
                 viewHolderRt.number.setText(driversList.get(i).getNumber());
-                viewHolderRt.dutyAt.setText(driversList.get(i).getDutyAt());
+                if(driversList.get(i).getDutyAt().size()>1){
+                    viewHolderRt.dutyAt.setText("Show List");
+                    viewHolderRt.dutyAt.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            showInstitueListDialogBox(root.getContext(),driversList.get(i).getDutyAt());
+                        }
+                    });
+
+                }else{
+                    viewHolderRt.dutyAt.setText(driversList.get(i).getDutyAt().get(0));
+                }
+
                 viewHolderRt.vehicleType.setText(driversList.get(i).getVehicleType());
                 viewHolderRt.vehicleSeatsAvailable.setText(driversList.get(i).getSeatsAvailable()+"");
 
@@ -164,5 +236,25 @@ public class AvailableDriversFragment extends Fragment {
         getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
     }
 
+    private void showInstitueListDialogBox(Context context , ArrayList<String> institueNameList){
+        Dialog dialog = new Dialog(context);
+        dialog.setContentView(R.layout.dialogbox_institution_list);
+        ListView listView = dialog.findViewById(R.id.lv_dialog_box_institute_list);
 
+        ArrayAdapter<String> itemsAdapter =
+                new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, institueNameList);
+
+        listView.setAdapter(itemsAdapter);
+
+        Button btnBack = dialog.findViewById(R.id.btn_back_dialog_box_institute_list);
+
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+
+            }
+        });
+        dialog.show();
+    }
 }

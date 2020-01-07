@@ -8,16 +8,23 @@ import android.net.NetworkInfo;
 import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.bus.R;
@@ -30,22 +37,26 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.rilixtech.CountryCodePicker;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class SignUpActivity extends AppCompatActivity {
     private LinearLayout loadingScreen, lyUserInfo, lyAdminInfo;
     private EditText etfirstName, etlastName, etphoneNumber, etDutyAtInstitutionName, etSeatingCapacity, etFullNameAdmin;
-    private Spinner spinnerVehicalType, spinnerUserType;
+    private Spinner spinnerVehicleType, spinnerUserType;
     private Button btnProceed;
     private CountryCodePicker countryCodePicker;
     private DatabaseReference myRef;
     private LinearLayout lyProducerRelatedInfo;
     private String[] userTypeList;
     private SharedPreferences.Editor editor;
-
-    private String fullName, dutyAtInstitute, vehicalType, phoneNumber;
+    private RecyclerView rv_signup_institute_name;
+    private ImageView ivButtonAddInstitueName;
+    private String fullName, dutyAtInstitute, vehicleType, phoneNumber;
     private int seatingCapacity;
+    private ArrayList<String> institueNamesList;
+    private RecyclerView.Adapter<SignUpActivity.ViewHolderRt> adapter;
 
     private static final int RC_SIGN_UP = 1000;
 
@@ -78,56 +89,6 @@ public class SignUpActivity extends AppCompatActivity {
         });
     }
 
-    private void checkAllFields() {
-        if(lyUserInfo.getVisibility()==View.VISIBLE){
-            if (etfirstName.getText().toString().trim().equals("")) {
-                etfirstName.setError("Enter First Name");
-                return;
-            }
-            if (etlastName.getText().toString().trim().equals("")) {
-                etlastName.setError("Enter Last Name");
-                return;
-            } else {
-                fullName = etfirstName.getText().toString() + " " + etlastName.getText().toString();
-            }
-        }
-        if(lyAdminInfo.getVisibility() == View.VISIBLE){
-            if (etFullNameAdmin.getText().toString().trim().equals("")) {
-                etFullNameAdmin.setError("Enter Institute Name");
-                return;
-            } else {
-                fullName = etFullNameAdmin.getText().toString();
-            }
-        }
-        if (lyProducerRelatedInfo.getVisibility() == View.VISIBLE) {
-            if (etDutyAtInstitutionName.getText().toString().trim().equals("")) {
-                etDutyAtInstitutionName.setError("Enter Institution Name");
-                return;
-            }else {
-                dutyAtInstitute = etDutyAtInstitutionName.getText().toString();
-            }
-
-            String[] vehical_type_list = getResources().getStringArray(R.array.vehical_type);
-            vehicalType = vehical_type_list[spinnerVehicalType.getSelectedItemPosition()];
-
-            if(etSeatingCapacity.getText().toString().trim().equals("")){
-                etSeatingCapacity.setError("Enter Capacity");
-                return;
-            }else{
-                seatingCapacity = Integer.parseInt(etSeatingCapacity.getText().toString().trim());
-            }
-        }
-
-        if (!etphoneNumber.getText().toString().trim().equals("")) {
-            phoneNumber = "+" + countryCodePicker.getSelectedCountryCode() + etphoneNumber.getText().toString().trim();
-            checkIfUserExsit(phoneNumber);
-        } else {
-            etphoneNumber.setError("Please Enter A Valid Number");
-            return;
-        }
-
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -138,8 +99,10 @@ public class SignUpActivity extends AppCompatActivity {
                     myRef = myRef.child(FirebaseAuth.getInstance().getCurrentUser().getUid());
                     myRef.child("Name").setValue(fullName);
                     myRef.child("Phone Number").setValue(phoneNumber);
-                    myRef.child("Institute Name").setValue(dutyAtInstitute);
-                    myRef.child("Vehical Type").setValue(vehicalType);
+                    for(String instituteName : institueNamesList){
+                        myRef.child("Institute Name List").child(instituteName).setValue("true");
+                    }
+                    myRef.child("Vehical Type").setValue(vehicleType);
                     myRef.child("IsActive").setValue(false);
                     myRef.child("Capacity").setValue(seatingCapacity);
                     myRef.child("Seats Occupied").setValue(0);
@@ -184,13 +147,68 @@ public class SignUpActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    private void checkAllFields() {
+        if(lyUserInfo.getVisibility()==View.VISIBLE){
+            if (etfirstName.getText().toString().trim().equals("")) {
+                etfirstName.setError("Enter First Name");
+                return;
+            }
+            if (etlastName.getText().toString().trim().equals("")) {
+                etlastName.setError("Enter Last Name");
+                return;
+            } else {
+                fullName = etfirstName.getText().toString() + " " + etlastName.getText().toString();
+            }
+        }
+        if(lyAdminInfo.getVisibility() == View.VISIBLE){
+            if (etFullNameAdmin.getText().toString().trim().equals("")) {
+                etFullNameAdmin.setError("Enter Institute Name");
+                return;
+            } else {
+                fullName = etFullNameAdmin.getText().toString();
+            }
+        }
+        if (lyProducerRelatedInfo.getVisibility() == View.VISIBLE) {
+            String institution_name = etDutyAtInstitutionName.getText().toString().trim();
+            if (institution_name.equals("") && institueNamesList.size()==0) {
+                etDutyAtInstitutionName.setError("Enter Institution Name");
+                return;
+            }else {
+                if(!institution_name.equals("")){
+                    if(!institueNamesList.contains(institution_name)){
+                        institueNamesList.add(institution_name);
+                    }
+                }
+            }
+
+            String[] vehical_type_list = getResources().getStringArray(R.array.vehical_type);
+            vehicleType = vehical_type_list[spinnerVehicleType.getSelectedItemPosition()];
+
+            if(etSeatingCapacity.getText().toString().trim().equals("")){
+                etSeatingCapacity.setError("Enter Capacity");
+                return;
+            }else{
+                seatingCapacity = Integer.parseInt(etSeatingCapacity.getText().toString().trim());
+            }
+        }
+
+        if (!etphoneNumber.getText().toString().trim().equals("")) {
+            phoneNumber = "+" + countryCodePicker.getSelectedCountryCode() + etphoneNumber.getText().toString().trim();
+            checkIfUserExsit(phoneNumber);
+        } else {
+            etphoneNumber.setError("Please Enter A Valid Number");
+            return;
+        }
+
+    }
+
     private void init() {
         loadingScreen = findViewById(R.id.ll_loading_signup);
         etfirstName = findViewById(R.id.et_signup_first_name);
         etlastName = findViewById(R.id.et_signup_last_name);
         etphoneNumber = findViewById(R.id.et_signup_number);
         etDutyAtInstitutionName = findViewById(R.id.et_signup_duty_at_Institution);
-        spinnerVehicalType = findViewById(R.id.spinner_signup);
+        spinnerVehicleType = findViewById(R.id.spinner_signup);
         etSeatingCapacity = findViewById(R.id.et_signup_seating_capacity);
         spinnerUserType = findViewById(R.id.spinner_user_type);
         lyProducerRelatedInfo = findViewById(R.id.ly_producer_related);
@@ -200,13 +218,36 @@ public class SignUpActivity extends AppCompatActivity {
         lyUserInfo = findViewById(R.id.ly_sign_up_user_info);
         lyAdminInfo = findViewById(R.id.ly_sign_up_admin_info);
         etFullNameAdmin = findViewById(R.id.et_signup_admin_name);
+        ivButtonAddInstitueName = findViewById(R.id.iv_signup_button_add_another_institute_name);
+        rv_signup_institute_name = findViewById(R.id.rv_signup_institute_name);
+        institueNamesList = new ArrayList<>();
+        recyclerView();
+
+        ivButtonAddInstitueName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String instituteName = etDutyAtInstitutionName.getText().toString().trim();
+                if(!instituteName.equals("")){
+                    if(!institueNamesList.contains(instituteName)){
+                        institueNamesList.add(instituteName);
+                        adapter.notifyDataSetChanged();
+                        etDutyAtInstitutionName.setText("");
+                    }else{
+                        etDutyAtInstitutionName.setError("Name Already Added");
+                    }
+                }else{
+                    etDutyAtInstitutionName.setError("Enter Name First");
+                }
+            }
+        });
+
     }
 
     private void setAdapterForSpinner() {
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.vehical_type, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerVehicalType.setAdapter(adapter);
+        spinnerVehicleType.setAdapter(adapter);
 
         ArrayAdapter<CharSequence> adapter1 = ArrayAdapter.createFromResource(this, R.array.user_type, android.R.layout.select_dialog_item);
         adapter1.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -289,5 +330,52 @@ public class SignUpActivity extends AppCompatActivity {
     private void hideLoadingScreen() {
         loadingScreen.setVisibility(View.GONE);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+    }
+
+    private void recyclerView() {
+        rv_signup_institute_name.setLayoutManager(new LinearLayoutManager(this));
+        adapter = new RecyclerView.Adapter<SignUpActivity.ViewHolderRt>() {
+
+            @Override
+            public SignUpActivity.ViewHolderRt onCreateViewHolder(ViewGroup viewGroup, int ViewType) {
+                return new SignUpActivity.ViewHolderRt(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.blueprint_institute_name, viewGroup, false));
+            }
+
+            @Override
+            public void onBindViewHolder(SignUpActivity.ViewHolderRt viewHolderRt, final int i) {
+
+                viewHolderRt.instituteName.setText(institueNamesList.get(i));
+                viewHolderRt.ivButtonRemoveInstituteName.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        for(String instituteName : institueNamesList){
+                            if(instituteName.equals(institueNamesList.get(i))) {
+                                institueNamesList.remove(instituteName);
+                                adapter.notifyDataSetChanged();
+                            }
+                        }
+                    }
+                });
+
+            }
+
+            @Override
+            public int getItemCount() {
+                return institueNamesList.size();
+            }
+        };
+        rv_signup_institute_name.setAdapter(adapter);
+    }
+
+    private class ViewHolderRt extends RecyclerView.ViewHolder {
+        TextView instituteName;
+        ImageView ivButtonRemoveInstituteName;
+        public ViewHolderRt(View itemView) {
+            super(itemView);
+            instituteName = itemView.findViewById(R.id.tv_blueprint_institute_name);
+            ivButtonRemoveInstituteName = itemView.findViewById(R.id.iv_button_remove_institute_name);
+
+        }
+
     }
 }

@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
+    android:clipToPadding="true"
     >
 
     <LinearLayout
@@ -31,11 +32,45 @@
             android:foregroundGravity="center" />
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/ly_search"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_driver_info_blueprint"
+        android:clipToPadding="false"
+        android:elevation="3dp"
+        android:layout_marginLeft="3dp"
+        android:layout_marginRight="3dp"
+        android:layout_marginTop="6dp"
+        android:layout_alignParentTop="true">
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_weight="0.1"
+            android:layout_height="30dp"
+            android:src="@drawable/ic_account_circle_black"/>
+        <EditText
+            android:id="@+id/et_id_add_driver"
+            android:layout_width="0dp"
+            android:layout_weight="0.8"
+            android:layout_height="match_parent"
+            android:hint="Driver Account Id"
+            />
+        <ImageView
+            android:id="@+id/iv_search_button_add_driver"
+            android:layout_width="0dp"
+            android:layout_weight="0.1"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_search_black"/>
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_available_drivers_fragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="3dp"
+        android:layout_marginTop="58dp"
         >
     </androidx.recyclerview.widget.RecyclerView>
 

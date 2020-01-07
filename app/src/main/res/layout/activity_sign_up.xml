@@ -233,7 +233,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:visibility="gone"
+                    android:visibility="visible"
                     >
 
                     <TextView
@@ -242,24 +242,50 @@
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="4dp"
                         android:layout_marginTop="6dp"
-                        android:text="Duty at Institution"
+                        android:text="Duty at Institute"
                         android:textAppearance="@style/TextAppearance.AppCompat"
                         android:textStyle="bold" />
-
-                    <EditText
-                        android:id="@+id/et_signup_duty_at_Institution"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="45dp"
-                        android:layout_marginLeft="2dp"
-                        android:layout_marginTop="2dp"
-                        android:layout_marginRight="2dp"
-                        android:background="@drawable/bg_edittext"
-                        android:hint="Institution Name"
-                        android:inputType="textPersonName"
-                        android:paddingLeft="5dp"
-                        android:padding="10dp"
-                        android:drawablePadding="20dp"
-                        android:drawableRight="@drawable/ic_school_green_24dp"/>
+                        android:orientation="horizontal"
+                        android:weightSum="1">
+
+                        <EditText
+                            android:id="@+id/et_signup_duty_at_Institution"
+                            android:layout_width="0dp"
+                            android:layout_weight="0.9"
+                            android:layout_height="match_parent"
+                            android:layout_marginLeft="2dp"
+                            android:layout_marginTop="2dp"
+                            android:layout_marginRight="6dp"
+                            android:background="@drawable/bg_edittext"
+                            android:hint="Institution Name"
+                            android:inputType="textPersonName"
+                            android:paddingLeft="5dp"
+                            android:padding="10dp"
+                            android:drawablePadding="20dp"
+                            android:drawableRight="@drawable/ic_school_green_24dp"/>
+
+
+                        <ImageView
+                            android:id="@+id/iv_signup_button_add_another_institute_name"
+                            android:layout_width="0dp"
+                            android:layout_weight="0.1"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/ic_add_circle_blue"/>
+
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_signup_institute_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="#F5F5F5"
+                        android:layout_marginLeft="4dp"
+                        android:layout_marginRight="4dp">
+
+                    </androidx.recyclerview.widget.RecyclerView>
 
                     <TextView
                         android:id="@+id/textView4"
