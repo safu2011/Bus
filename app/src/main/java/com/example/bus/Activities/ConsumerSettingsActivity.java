@@ -20,10 +20,13 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.bus.Fragments.NotificationHintFragment;
 import com.example.bus.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -114,6 +117,8 @@ public class ConsumerSettingsActivity extends AppCompatActivity implements View.
 
 
         if(isNetworkAvailable()){
+
+            getPersonalInfo();
 
             DatabaseReference driversRef = FirebaseDatabase.getInstance().getReference("Consumers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Drivers");
             driversRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -249,4 +254,29 @@ public class ConsumerSettingsActivity extends AppCompatActivity implements View.
         NetworkInfo networkInfo = ((ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnected();
     }
+
+
+    private void getPersonalInfo(){
+        TextView tvUserName,tvUserPhoneNumber;
+        tvUserName = findViewById(R.id.tv_name_consumer);
+        tvUserPhoneNumber = findViewById(R.id.tv_phoneNumber_consumer);
+        DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference("Consumers List")
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+
+            rootRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    tvUserName.setText(dataSnapshot.child("Name").getValue(String.class));
+                    tvUserPhoneNumber.setText(dataSnapshot.child("Phone Number").getValue(String.class));
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
+    }
+
 }

@@ -469,22 +469,22 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         public View getInfoWindow(Marker marker) { // 2
             for(int i=0 ;i<driversList.size(); i++){
-                if(marker.getTitle().equals(driversList.get(i).getName())){
+                if(driversList.get(i) != null) {
+                    if (marker.getTitle().equals(driversList.get(i).getName())) {
 
-                    TextView tvDriverName = markerItemView.findViewById(R.id.tv_marker_info_driver_name);
-                    TextView tvDriverInstitute = markerItemView.findViewById(R.id.tv_marker_info_driver_duty_at);
-                    TextView tvDriverArrivingTime = markerItemView.findViewById(R.id.tv_marker_info_driver_arriving_time);
+                        TextView tvDriverName = markerItemView.findViewById(R.id.tv_marker_info_driver_name);
+                        TextView tvDriverInstitute = markerItemView.findViewById(R.id.tv_marker_info_driver_duty_at);
+                        TextView tvDriverArrivingTime = markerItemView.findViewById(R.id.tv_marker_info_driver_arriving_time);
 
-                    tvDriverName.setText("Name : "+driversList.get(i).getName());
-                    tvDriverInstitute.setText("Institute : "+driversList.get(i).getDutyAt());
+                        tvDriverName.setText("Name : " + driversList.get(i).getName());
+                        tvDriverInstitute.setText("Institute : " + driversList.get(i).getDutyAt());
 
-                    if(rootRefNode.equals("Consumers List")){
-                        getArrivalTime(driversList.get(i).getId());
-                        tvDriverArrivingTime.setText("Arrival Time : "+driversList.get(i).getArrivalTime());
+                        if (rootRefNode.equals("Consumers List")) {
+                            getArrivalTime(driversList.get(i).getId());
+                            tvDriverArrivingTime.setText("Arrival Time : " + driversList.get(i).getArrivalTime());
+                        } else
+                            tvDriverArrivingTime.setText("Children in vehicle : " + driversList.get(i).getChildrenInVehicle());
                     }
-
-                    else
-                        tvDriverArrivingTime.setText("Children in vehicle : "+driversList.get(i).getChildrenInVehicle());
                 }
             }
             return markerItemView;  // 4

@@ -21,11 +21,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Activities.AddDriverForAdminActivity"
+        <activity android:name=".Activities.UserTyoeActivity"></activity>
+        <activity
+            android:name=".Activities.AddDriverForAdminActivity"
             android:configChanges="orientation|screenSize"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
-        <activity android:name=".Activities.AdminActivity"
-            android:configChanges="orientation|screenSize"/>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Activities.AdminActivity"
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".Activities.ConsumerSettingsActivity"
             android:configChanges="orientation|screenSize" />
