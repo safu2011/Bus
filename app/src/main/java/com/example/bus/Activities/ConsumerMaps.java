@@ -466,6 +466,7 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
         public InfoWindowAdapterForCustomer() {
             markerItemView = ((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.marker_info_view_blueprint, null);  // 1
         }
+
         @Override
         public View getInfoWindow(Marker marker) { // 2
             for(int i=0 ;i<driversList.size(); i++){
@@ -476,8 +477,17 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
                         TextView tvDriverInstitute = markerItemView.findViewById(R.id.tv_marker_info_driver_duty_at);
                         TextView tvDriverArrivingTime = markerItemView.findViewById(R.id.tv_marker_info_driver_arriving_time);
 
-                        tvDriverName.setText("Name : " + driversList.get(i).getName());
-                        tvDriverInstitute.setText("Institute : " + driversList.get(i).getDutyAt());
+                        tvDriverName.setText(driversList.get(i).getName());
+                        if(driversList.get(i).getDutyAt().size()>1){
+                            String institueNames = driversList.get(i).getDutyAt().get(0);
+                            for(int z=1 ; z<driversList.get(i).getDutyAt().size(); z++){
+                                institueNames = institueNames +"\n"+driversList.get(i).getDutyAt().get(z);
+                            }
+                            tvDriverInstitute.setText(institueNames);
+                        }else{
+                            tvDriverInstitute.setText("Institute : " + driversList.get(i).getDutyAt());
+                        }
+
 
                         if (rootRefNode.equals("Consumers List")) {
                             getArrivalTime(driversList.get(i).getId());

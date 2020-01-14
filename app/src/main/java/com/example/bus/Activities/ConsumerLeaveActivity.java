@@ -119,7 +119,13 @@ public class ConsumerLeaveActivity extends AppCompatActivity {
 
                 if(driversList.get(i).getDutyAt().size()>1){
                     viewHolderRt.dutyAt.setText("Show List");
-                    showInstitueListDialogBox(ConsumerLeaveActivity.this,driversList.get(i).getDutyAt());
+                    viewHolderRt.dutyAt.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            showInstitueListDialogBox(ConsumerLeaveActivity.this,driversList.get(i).getDutyAt());
+                        }
+                    });
+
                 }else{
                     viewHolderRt.dutyAt.setText(driversList.get(i).getDutyAt().get(0));
                 }

@@ -156,7 +156,7 @@ public class AdminActivity extends AppCompatActivity implements View.OnClickList
                         SharedPreferences.Editor editor = sharedPref.edit();
                         editor.putString(getString(R.string.user_type), "null");
                         editor.commit();
-                        startActivity(new Intent(AdminActivity.this, LoginActivity.class));
+                        startActivity(new Intent(AdminActivity.this, UserTypeActivity.class));
                         finish();
                     }
                 })

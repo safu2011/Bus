@@ -307,7 +307,7 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
                                         editor.putString(getString(R.string.user_type), "null");
                                         editor.commit();
                                         Toast.makeText(ProducerMapsActivity.this, "Logging Out...", Toast.LENGTH_SHORT).show();
-                                        startActivity(new Intent(ProducerMapsActivity.this, LoginActivity.class));
+                                        startActivity(new Intent(ProducerMapsActivity.this, UserTypeActivity.class));
                                         finish();
                                     }
                                 }

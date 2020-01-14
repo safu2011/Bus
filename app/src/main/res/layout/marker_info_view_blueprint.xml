@@ -11,21 +11,44 @@
         android:orientation="vertical"
         android:padding="8dp"
         android:background="@drawable/bg_marker_info_window"
-        android:gravity="center"
+        android:gravity="center_vertical"
         android:elevation="22dp">
 
-        <TextView
-            android:id="@+id/tv_marker_info_driver_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Name : Driver Name"
-            android:textColor="#000"/>
-        <TextView
-            android:id="@+id/tv_marker_info_driver_duty_at"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Duty at : Institute Name"
-            android:textColor="#000"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Name : "
+                android:textColor="#000"/>
+            <TextView
+                android:id="@+id/tv_marker_info_driver_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Driver Name"
+                android:textColor="#000"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Duty at : "
+                android:textColor="#000"/>
+            <TextView
+                android:id="@+id/tv_marker_info_driver_duty_at"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Institute Name"
+                android:textColor="#000"/>
+
+        </LinearLayout>
+
         <TextView
             android:id="@+id/tv_marker_info_driver_arriving_time"
             android:layout_width="wrap_content"

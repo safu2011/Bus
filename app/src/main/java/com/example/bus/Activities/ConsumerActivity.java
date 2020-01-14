@@ -139,7 +139,7 @@ public class ConsumerActivity extends AppCompatActivity implements View.OnClickL
                                                         SharedPreferences.Editor editor = sharedPref.edit();
                                                         editor.putString(getString(R.string.user_type), "null");
                                                         editor.commit();
-                                                        startActivity(new Intent(ConsumerActivity.this, LoginActivity.class));
+                                                        startActivity(new Intent(ConsumerActivity.this, UserTypeActivity.class));
                                                         finish();
                                                     }else{
                                                         Log.d("ConsumerActivity", "onComplete: "+task.getException().getMessage());
