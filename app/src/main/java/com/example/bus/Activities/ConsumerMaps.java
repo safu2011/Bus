@@ -113,6 +113,7 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
         if(customerLatlang!=null) {
             mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(customerLatlang, 14f));
             customerMarker = mMap.addMarker(new MarkerOptions()
+                    .title("Me")
                     .position(customerLatlang)
                     .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_self))));
         }
@@ -469,35 +470,37 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
 
         @Override
         public View getInfoWindow(Marker marker) { // 2
-            for(int i=0 ;i<driversList.size(); i++){
-                if(driversList.get(i) != null) {
-                    if (marker.getTitle().equals(driversList.get(i).getName())) {
+            if(!marker.getTitle().equals("Me")){
+                for(int i=0 ;i<driversList.size(); i++){
+                    if(driversList.get(i) != null) {
+                        if (marker.getTitle().equals(driversList.get(i).getName())) {
+                            TextView tvDriverName = markerItemView.findViewById(R.id.tv_marker_info_driver_name);
+                            TextView tvDriverInstitute = markerItemView.findViewById(R.id.tv_marker_info_driver_duty_at);
+                            TextView tvDriverArrivingTime = markerItemView.findViewById(R.id.tv_marker_info_driver_arriving_time);
 
-                        TextView tvDriverName = markerItemView.findViewById(R.id.tv_marker_info_driver_name);
-                        TextView tvDriverInstitute = markerItemView.findViewById(R.id.tv_marker_info_driver_duty_at);
-                        TextView tvDriverArrivingTime = markerItemView.findViewById(R.id.tv_marker_info_driver_arriving_time);
-
-                        tvDriverName.setText(driversList.get(i).getName());
-                        if(driversList.get(i).getDutyAt().size()>1){
-                            String institueNames = driversList.get(i).getDutyAt().get(0);
-                            for(int z=1 ; z<driversList.get(i).getDutyAt().size(); z++){
-                                institueNames = institueNames +"\n"+driversList.get(i).getDutyAt().get(z);
+                            tvDriverName.setText(driversList.get(i).getName());
+                            if(driversList.get(i).getDutyAt().size()>1){
+                                String institueNames = driversList.get(i).getDutyAt().get(0);
+                                for(int z=1 ; z<driversList.get(i).getDutyAt().size(); z++){
+                                    institueNames = institueNames +"\n"+driversList.get(i).getDutyAt().get(z);
+                                }
+                                tvDriverInstitute.setText(institueNames);
+                            }else{
+                                tvDriverInstitute.setText("Institute : " + driversList.get(i).getDutyAt());
                             }
-                            tvDriverInstitute.setText(institueNames);
-                        }else{
-                            tvDriverInstitute.setText("Institute : " + driversList.get(i).getDutyAt());
+
+
+                            if (rootRefNode.equals("Consumers List")) {
+                                getArrivalTime(driversList.get(i).getId());
+                                tvDriverArrivingTime.setText("Arrival Time : " + driversList.get(i).getArrivalTime());
+                            } else
+                                tvDriverArrivingTime.setText("Children in vehicle : " + driversList.get(i).getChildrenInVehicle());
                         }
-
-
-                        if (rootRefNode.equals("Consumers List")) {
-                            getArrivalTime(driversList.get(i).getId());
-                            tvDriverArrivingTime.setText("Arrival Time : " + driversList.get(i).getArrivalTime());
-                        } else
-                            tvDriverArrivingTime.setText("Children in vehicle : " + driversList.get(i).getChildrenInVehicle());
+                        return markerItemView;
                     }
-                }
+                 }
             }
-            return markerItemView;  // 4
+            return null;
         }
         @Override
         public View getInfoContents(Marker marker) {

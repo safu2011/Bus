@@ -197,7 +197,6 @@ public class ConsumerActivity extends AppCompatActivity implements View.OnClickL
                                 finish();
                             }else{
                                 hideLoadingScreen();
-                                Toast.makeText(ConsumerActivity.this,"No Active Drivers",Toast.LENGTH_SHORT).show();
                             }
                             Intent intent = new Intent("processing done");
                             sendBroadcast(intent);
