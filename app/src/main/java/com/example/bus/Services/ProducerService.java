@@ -25,6 +25,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
@@ -33,7 +34,18 @@ import android.widget.Toast;
 import com.example.bus.Activities.ProducerMapsActivity;
 import com.example.bus.ModelClasses.CustomerModelClass;
 import com.example.bus.R;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -46,7 +58,9 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 
-public class ProducerService extends Service implements LocationListener {
+public class ProducerService extends Service{
+    private static final long REQUEST_INTERVAL = 5000;
+    private static final long FASTEST_INTERVAL = 1000;
     private ArrayList<Double> previousSpeedList;
     private Long myPreviousTime;
     public LatLng myLatlang;
@@ -54,11 +68,12 @@ public class ProducerService extends Service implements LocationListener {
     public static ArrayList<CustomerModelClass> customersList;
     public static CustomerModelClass currentTargetedCustomer;
     public static int totalCustomerNumber;
-    private LocationManager locationManager;
     private ConnectivityManager CONNECTIVITY_MANAGER;
     private TextToSpeech tts;
     private double avgSpeed = 0.0;
     private boolean isTtsAvailable = false;
+
+    private FusedLocationProviderClient client;
 
 
     @Override
@@ -66,7 +81,6 @@ public class ProducerService extends Service implements LocationListener {
         super.onCreate();
         previousSpeedList = new ArrayList<>();
         myPreviousTime = System.currentTimeMillis();
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         tts = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int i) {
@@ -87,6 +101,8 @@ public class ProducerService extends Service implements LocationListener {
             }
         });
 
+        createLocationRequest();
+
     }
 
 
@@ -96,15 +112,7 @@ public class ProducerService extends Service implements LocationListener {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             notificationForeground();
         }
-        if (locationManager != null) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                stopSelf();
-            }
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 5, this);
-        } else {
-            stopSelf();
-            Toast.makeText(this, "Opps something went wrong !!!", Toast.LENGTH_LONG).show();
-        }
+
         // customersRelated
         myLatlang = intent.getParcelableExtra("myLatlang");
         if (currentTargetedCustomer == null) {
@@ -147,59 +155,6 @@ public class ProducerService extends Service implements LocationListener {
 
     public IBinder onBind(Intent intent) {
         return null;
-    }
-
-
-    @Override
-    public void onLocationChanged(Location location) {
-        LatLng newPosition = new LatLng(location.getLatitude(), location.getLongitude());
-        if (currentTargetedCustomer != null)
-            setSpeed(newPosition);
-        myLatlang = newPosition;
-        updateLocationInDatabase();
-
-        if (currentTargetedCustomer != null && currentTargetedCustomer.getCustomerDistanceRemaining() <= currentTargetedCustomer.getNotificationDistance()) {
-            // bus has arrived at target location
-            int value = 0;
-            for (CustomerModelClass customer : customersList) {
-                if (customer.getCustomerName().equals(currentTargetedCustomer.getCustomerName())) {
-                    customer.setCustomerDeliveryStatus("Deliverd");
-                }
-                if (customer.getCustomerDeliveryStatus().equals("Deliverd"))  // calculating children in vehicle at the time
-                    value++;
-
-            }
-
-            if(isNetworkAvailable()) {
-                FirebaseDatabase.getInstance().getReference("Consumers List").child(currentTargetedCustomer.getId()).child("Arrived").setValue("True");
-                FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Children in vehicle").setValue(value+"/"+customersList.size());
-            }
-            if (!allDeliverd()) {
-                currentTargetedCustomer = getNearestCustomer();
-                notification("Head towards " + currentTargetedCustomer.getCustomerName() + " Location");
-                sendBroadcastMessageToUpdateMarker();
-            } else {
-                currentTargetedCustomer = null;
-                stopSelf();
-                notification("All Deliveries Made");
-                sendBroadcastMessageToUpdateMarker();
-            }
-            sendBroadCastMessageToUpdatePolyline();
-
-        }
-
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
     }
 
 
@@ -482,4 +437,114 @@ public class ProducerService extends Service implements LocationListener {
     }
 
 
+
+    private LocationCallback mLocationcallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+
+            Location location= locationResult.getLocations().get(0);
+
+            LatLng newPosition = new LatLng(location.getLatitude(), location.getLongitude());
+            if (currentTargetedCustomer != null)
+                setSpeed(newPosition);
+            myLatlang = newPosition;
+            updateLocationInDatabase();
+
+            if (currentTargetedCustomer != null && currentTargetedCustomer.getCustomerDistanceRemaining() <= currentTargetedCustomer.getNotificationDistance()) {
+                // bus has arrived at target location
+                int value = 0;
+                for (CustomerModelClass customer : customersList) {
+                    if (customer.getCustomerName().equals(currentTargetedCustomer.getCustomerName())) {
+                        customer.setCustomerDeliveryStatus("Deliverd");
+                    }
+                    if (customer.getCustomerDeliveryStatus().equals("Deliverd"))  // calculating children in vehicle at the time
+                        value++;
+
+                }
+
+                if(isNetworkAvailable()) {
+                    FirebaseDatabase.getInstance().getReference("Consumers List").child(currentTargetedCustomer.getId()).child("Arrived").setValue("True");
+                    FirebaseDatabase.getInstance().getReference("Producers List").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Children in vehicle").setValue(value+"/"+customersList.size());
+                }
+                if (!allDeliverd()) {
+                    currentTargetedCustomer = getNearestCustomer();
+                    notification("Head towards " + currentTargetedCustomer.getCustomerName() + " Location");
+                    sendBroadcastMessageToUpdateMarker();
+                } else {
+                    currentTargetedCustomer = null;
+                    stopSelf();
+                    notification("All Deliveries Made");
+                    sendBroadcastMessageToUpdateMarker();
+                }
+                sendBroadCastMessageToUpdatePolyline();
+
+            }
+
+
+
+
+        }
+    };
+
+    //location related
+    private void createLocationRequest() {
+        //this request is to chec the necessary settings
+
+        final LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setInterval(REQUEST_INTERVAL);
+        locationRequest.setFastestInterval(FASTEST_INTERVAL);
+        locationRequest.setSmallestDisplacement(0);//later turn to some bigger value
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(locationRequest);
+
+        SettingsClient client = LocationServices.getSettingsClient(this);
+
+        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
+
+        task.addOnSuccessListener(/*RideService.this,*/ locationSettingsResponse -> {
+            requestLocationUpdates(locationRequest);
+
+        });
+        task.addOnFailureListener(/*this,*/ new OnFailureListener() {
+            @Override
+            public void onFailure(@androidx.annotation.NonNull Exception e) {
+                if (e instanceof ResolvableApiException) {
+                    stopSelf();
+                    Toast.makeText(getApplicationContext(), "resolvable failure", Toast.LENGTH_SHORT).show();
+                    // FIXME: if time an on production level  9/20/2019 later use this reolution code experimentally to resolve the issue
+//               try {
+//                   // Show the dialog by calling startResolutionForResult(),
+//                   // and check the result in onActivityResult().
+////                   ResolvableApiException resolvable = (ResolvableApiException) e;
+////                   resolvable.startResolutionForResult(ProviderClientsFragment.this,
+////                           REQUEST_CHECK_SETTINGS);
+//               } catch (IntentSender.SendIntentException sendEx) {
+//                   // Ignore the error.
+//               }
+
+                } else {
+                    stopSelf();
+                    Toast.makeText(getApplicationContext(), "non resolvable failure", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void requestLocationUpdates(LocationRequest request) {
+
+        client = LocationServices.getFusedLocationProviderClient(this);
+        //final String path = getString(R.string.firebase_path) + "/" + getString(R.string.transport_id);
+        int permission = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permission == PackageManager.PERMISSION_GRANTED) {
+            // Request location updates and when an update is
+            // received, store the location in Firebase
+            client.requestLocationUpdates(request, mLocationcallback, null);// FIXME:  if time 8/8/2019 detach the listener when the user logs out or activity is teminated
+
+        } else {
+            Toast.makeText(getApplicationContext(), "no permissions", Toast.LENGTH_SHORT).show();
+        }
+    }
 }

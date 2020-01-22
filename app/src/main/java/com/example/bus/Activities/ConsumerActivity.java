@@ -1,6 +1,7 @@
 package com.example.bus.Activities;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -19,7 +20,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.bus.R;
@@ -211,7 +216,7 @@ public class ConsumerActivity extends AppCompatActivity implements View.OnClickL
                 }
                 else{
                     hideLoadingScreen();
-                    Toast.makeText(ConsumerActivity.this,"Add Driver First !!!",Toast.LENGTH_SHORT).show();
+                    showInstitueListDialogBox("Add Driver First !!!");
                 }
 
 
@@ -242,9 +247,27 @@ public class ConsumerActivity extends AppCompatActivity implements View.OnClickL
                 if (intent.getAction().equals("processing done") && driverAvailable[0] == false && index[0]==driverAvailable.length) {
                     index[0] = 0;
                     hideLoadingScreen();
-                    Toast.makeText(ConsumerActivity.this,"All drivers are offline",Toast.LENGTH_SHORT).show();
+                    showInstitueListDialogBox("All drivers are offline");
             }
         }
+    }
+
+
+    private void showInstitueListDialogBox(String text){
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_blueprint);
+        TextView textView = dialog.findViewById(R.id.tv_alert_dialog);
+        textView.setText(text);
+
+        Button btnBack = dialog.findViewById(R.id.btn_alert_dialog);
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+
+            }
+        });
+        dialog.show();
     }
 
 

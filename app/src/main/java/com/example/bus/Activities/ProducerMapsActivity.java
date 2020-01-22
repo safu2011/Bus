@@ -28,8 +28,19 @@ import androidx.annotation.NonNull;
 import com.applandeo.materialcalendarview.EventDay;
 import com.example.bus.directionhelpers.FetchURL;
 import com.example.bus.directionhelpers.TaskLoadedCallback;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.navigation.NavigationView;
 
@@ -37,6 +48,7 @@ import androidx.core.app.ActivityCompat;
 
 import android.os.Bundle;
 
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
@@ -92,12 +104,14 @@ import static com.example.bus.Services.ProducerService.currentTargetedCustomer;
 import static com.example.bus.Services.ProducerService.customersList;
 
 
-public class ProducerMapsActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener, NavigationView.OnNavigationItemSelectedListener, TaskLoadedCallback {
+public class ProducerMapsActivity extends AppCompatActivity implements OnMapReadyCallback, NavigationView.OnNavigationItemSelectedListener, TaskLoadedCallback {
 
     public static final int PERMISSION_REQUEST_CODE_LOCATION = 1;
+    private static final long REQUEST_INTERVAL = 5000;
+    private static final long FASTEST_INTERVAL = 1000;
+    private FusedLocationProviderClient client;
     private ConnectivityManager CONNECTIVITY_MANAGER;
     private GoogleMap mMap;
-    public LocationManager locationManager;
     private LatLng myLatlang;
     private Marker myMarker;
     private ArrayList<Marker> customersMarkerList;
@@ -172,27 +186,11 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setCompassEnabled(false);
-        if (myLatlang != null) {
-            myMarker = mMap.addMarker(new MarkerOptions()
-                    .position(myLatlang)
-                    .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_self))));
-            updateLocationInDatabase();
-        } else if (getLocationFromDatabase() != null) {
-            myLatlang = getLocationFromDatabase();
-            myMarker = mMap.addMarker(new MarkerOptions()
-                    .position(myLatlang)
-                    .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_self))));
-            updateLocationInDatabase();
-        }
 
-        if (currentTargetedCustomer == null) {
-            mMap.getUiSettings().setZoomControlsEnabled(true);
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myLatlang, 14f));
-        } else {
+       if(currentTargetedCustomer != null) {
             mMap.getUiSettings().setZoomControlsEnabled(false);
             currentPolyline = mMap.addPolyline(currentTargetedCustomer.getCustomerPolyline());
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLatlang.latitude - 0.00008, myLatlang.longitude), 22f));
-        }
+           }
 
         // drawing markers on Map if not drawn before
         if (customersList != null && customersList.size() > 0) {
@@ -214,31 +212,6 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
 
     }
 
-    @Override
-    public void onLocationChanged(Location location) {
-        myLatlang = new LatLng(location.getLatitude(), location.getLongitude());
-        if (myMarker != null && mMap != null) {
-            myMarker.setPosition(myLatlang);
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myLatlang, 14f));
-        } else if (myMarker == null) {
-            myMarker = mMap.addMarker(new MarkerOptions()
-                    .position(myLatlang)
-                    .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_self))));
-        }
-
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
@@ -246,7 +219,7 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
 
             case PERMISSION_REQUEST_CODE_LOCATION:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    getlocation();
+                    createLocationRequest();
                 } else {
 
                     Toast.makeText(getApplicationContext(), "Permission Denied, You cannot access location data.", Toast.LENGTH_LONG).show();
@@ -360,8 +333,9 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        getlocation();
+
+        createLocationRequest();
+
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         nestedScrollView = findViewById(R.id.nestedScrollView);
         mBottomSheetBehaviour = BottomSheetBehavior.from(nestedScrollView);
@@ -600,50 +574,6 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
         });
     }
 
-    private void getlocation() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE_LOCATION);
-            } else {
-                if (locationManager != null) {
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 5, this);
-                    Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    if (location != null) {
-                        myLatlang = new LatLng(location.getLatitude(), location.getLongitude());
-
-                    } else {
-                        Location loc = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-                        if (loc != null) {
-                            myLatlang = new LatLng(loc.getLatitude(), loc.getLongitude());
-                        } else {
-                            Location loc1 = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                            if (loc1 != null) {
-                                myLatlang = new LatLng(loc1.getLatitude(), loc1.getLongitude());
-                            }
-                        }
-                    }
-                } else {
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 5, this);
-                    Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    if (location != null) {
-                        myLatlang = new LatLng(location.getLatitude(), location.getLongitude());
-
-                    } else {
-                        Location loc = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-                        if (loc != null) {
-                            myLatlang = new LatLng(loc.getLatitude(), loc.getLongitude());
-                        } else {
-                            Location loc1 = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                            if (loc1 != null) {
-                                myLatlang = new LatLng(loc1.getLatitude(), loc1.getLongitude());
-                            }
-                        }
-                    }
-                }
-            }
-
-        }
-    }
 
     private Bitmap getMarkerBitmapFromView(int layoutId) {
         View customMarkerView = ((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(layoutId, null);
@@ -933,5 +863,147 @@ public class ProducerMapsActivity extends AppCompatActivity implements OnMapRead
 
     return duration.humanReadable;
 }
+
+
+    private LocationCallback mLocationcallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+
+            Location location= locationResult.getLocations().get(0);
+            myLatlang = new LatLng(location.getLatitude(), location.getLongitude());
+            if (myMarker != null && mMap != null) {
+                myMarker.setPosition(myLatlang);
+            }else if (myMarker == null) {
+                myMarker = mMap.addMarker(new MarkerOptions()
+                        .position(myLatlang)
+                        .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_self))));
+
+                if(currentTargetedCustomer != null)
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(myLatlang.latitude - 0.00008, myLatlang.longitude), 22f));
+                else
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myLatlang, 14f));
+
+            }
+            updateLocationInDatabase();
+
+        }
+    };
+
+
+    //location related
+    private void createLocationRequest() {
+        //this request is to chec the necessary settings
+
+        final LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setInterval(REQUEST_INTERVAL);
+        locationRequest.setFastestInterval(FASTEST_INTERVAL);
+        locationRequest.setSmallestDisplacement(0);//later turn to some bigger value
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(locationRequest);
+
+        SettingsClient client = LocationServices.getSettingsClient(this);
+
+        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
+
+        task.addOnSuccessListener(/*RideService.this,*/ locationSettingsResponse -> {
+            requestLocationUpdates(locationRequest);
+
+        });
+        task.addOnFailureListener(/*this,*/ new OnFailureListener() {
+            @Override
+            public void onFailure(@androidx.annotation.NonNull Exception e) {
+                if (e instanceof ResolvableApiException) {
+
+                    if (getLocationFromDatabase() != null) {
+                        myLatlang = getLocationFromDatabase();
+                        myMarker = mMap.addMarker(new MarkerOptions()
+                                .position(myLatlang)
+                                .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_self))));
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(myLatlang, 14f));
+                    }
+
+                    Toast.makeText(getApplicationContext(), "resolvable failure", Toast.LENGTH_SHORT).show();
+                    // FIXME: if time an on production level  9/20/2019 later use this reolution code experimentally to resolve the issue
+//               try {
+//                   // Show the dialog by calling startResolutionForResult(),
+//                   // and check the result in onActivityResult().
+////                   ResolvableApiException resolvable = (ResolvableApiException) e;
+////                   resolvable.startResolutionForResult(ProviderClientsFragment.this,
+////                           REQUEST_CHECK_SETTINGS);
+//               } catch (IntentSender.SendIntentException sendEx) {
+//                   // Ignore the error.
+//               }
+
+                } else {
+                    Toast.makeText(getApplicationContext(), "non resolvable failure", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    private void requestLocationUpdates(LocationRequest request) {
+
+        client = LocationServices.getFusedLocationProviderClient(this);
+        //final String path = getString(R.string.firebase_path) + "/" + getString(R.string.transport_id);
+        int permission = ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permission == PackageManager.PERMISSION_GRANTED) {
+            // Request location updates and when an update is
+            // received, store the location in Firebase
+            client.requestLocationUpdates(request, mLocationcallback, null);// FIXME:  if time 8/8/2019 detach the listener when the user logs out or activity is teminated
+
+        } else {
+            Toast.makeText(getApplicationContext(), "no permissions", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // my location code
+
+    /*private void getlocation() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE_LOCATION);
+            } else {
+                if (locationManager != null) {
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 5, this);
+                    Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    if (location != null) {
+                        myLatlang = new LatLng(location.getLatitude(), location.getLongitude());
+
+                    } else {
+                        Location loc = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+                        if (loc != null) {
+                            myLatlang = new LatLng(loc.getLatitude(), loc.getLongitude());
+                        } else {
+                            Location loc1 = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                            if (loc1 != null) {
+                                myLatlang = new LatLng(loc1.getLatitude(), loc1.getLongitude());
+                            }
+                        }
+                    }
+                } else {
+                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 5, this);
+                    Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    if (location != null) {
+                        myLatlang = new LatLng(location.getLatitude(), location.getLongitude());
+
+                    } else {
+                        Location loc = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
+                        if (loc != null) {
+                            myLatlang = new LatLng(loc.getLatitude(), loc.getLongitude());
+                        } else {
+                            Location loc1 = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                            if (loc1 != null) {
+                                myLatlang = new LatLng(loc1.getLatitude(), loc1.getLongitude());
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+    }*/
 
 }

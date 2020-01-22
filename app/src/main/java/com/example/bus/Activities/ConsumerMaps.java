@@ -3,6 +3,7 @@ package com.example.bus.Activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
@@ -34,6 +35,15 @@ import android.widget.Toast;
 
 import com.example.bus.ModelClasses.DriverModelClass;
 import com.example.bus.R;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -42,6 +52,8 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -54,13 +66,13 @@ import java.util.ArrayList;
 
 import static com.example.bus.Activities.ProducerMapsActivity.PERMISSION_REQUEST_CODE_LOCATION;
 
-public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallback , LocationListener {
+public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private Marker customerMarker;
     private LatLng customerLatlang;
-    private LocationManager locationManager;
     private ArrayList<Marker> driversMarkersList;
+    private ArrayList<Marker> MyPickUpPointsList;
     private ArrayList<DriverModelClass> driversList;
     private LinearLayout loadingScreen;
     private RecyclerView recyclerView;
@@ -79,9 +91,10 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
-        locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        getlocation();
+
         driversMarkersList = new ArrayList<>();
+        MyPickUpPointsList = new ArrayList<>();
+
         driversList = new ArrayList<>();
         rootRefNode = getIntent().getStringExtra("Parent node");  // for reusability of activity of admin and parent
 
@@ -104,19 +117,13 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
         InfoWindowAdapterForCustomer infoWindowAdapterForCustomer = new InfoWindowAdapterForCustomer();
         mMap.setInfoWindowAdapter(infoWindowAdapterForCustomer);
-        if(customerLatlang!=null) {
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(customerLatlang, 14f));
-            customerMarker = mMap.addMarker(new MarkerOptions()
-                    .title("Me")
-                    .position(customerLatlang)
-                    .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_self))));
-        }
 
         getLocationDrivers();
     }
@@ -132,80 +139,6 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
         finish();
     }
 
-    private void getlocation() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE_LOCATION);
-            } else {
-                if (locationManager != null) {
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 5, this);
-                    Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    if (location != null) {
-                        customerLatlang = new LatLng(location.getLatitude(), location.getLongitude());
-
-                    } else {
-                        Location loc = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-                        if(loc != null){
-                            customerLatlang = new LatLng(loc.getLatitude(), loc.getLongitude());
-                        }else{
-                            Location loc1 = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                            if(loc1 != null){
-                                customerLatlang = new LatLng(loc1.getLatitude(), loc1.getLongitude());
-                            }
-                        }
-                    }
-                } else {
-                    locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 5, this);
-                    Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    if (location != null) {
-                        customerLatlang = new LatLng(location.getLatitude(), location.getLongitude());
-
-                    } else {
-                        Location loc = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-                        if(loc != null){
-                            customerLatlang = new LatLng(loc.getLatitude(), loc.getLongitude());
-                        }else{
-                            Location loc1 = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                            if(loc1 != null){
-                                customerLatlang = new LatLng(loc1.getLatitude(), loc1.getLongitude());
-                            }
-                        }
-                    }
-                }
-            }
-
-        }
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        if(mMap != null) {
-            customerLatlang = new LatLng(location.getLatitude(), location.getLongitude());
-            if (customerMarker == null) {
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(customerLatlang, 14f));
-                customerMarker = mMap.addMarker(new MarkerOptions()
-                        .position(customerLatlang)
-                        .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_self))));
-            }
-            customerMarker.setPosition(customerLatlang);
-        }
-    }
-
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String s) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String s) {
-
-    }
 
     private Bitmap getMarkerBitmapFromView(int layoutId) {
         View customMarkerView = ((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(layoutId, null);
@@ -251,6 +184,15 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
                                     String driverName = dataSnapshot.child("Name").getValue(String.class);
                                     double driverLatitude = dataSnapshot.child("Latitude").getValue(Double.class);
                                     double driverLongitude = dataSnapshot.child("Longitude").getValue(Double.class);
+
+                                    double myPickUpPointLati = dataSnapshot.child("Customers").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Pick up point latitude").getValue(Double.class);
+                                    double myPickUpPointLongi = dataSnapshot.child("Customers").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("Pick up point longitude").getValue(Double.class);
+
+                                    MyPickUpPointsList.add(mMap.addMarker(new MarkerOptions()
+                                            .title("Me")
+                                            .position(new LatLng(myPickUpPointLati,myPickUpPointLongi))
+                                            .icon(BitmapDescriptorFactory.fromBitmap(getMarkerBitmapFromView(R.layout.marker_self)))));
+
                                     driversMarkersList.add(getMarker(driverName,driverLatitude,driverLongitude));
 
                                     ArrayList<String> institueNameList = new ArrayList<>();
@@ -406,10 +348,6 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-
-
-
-
     private void setRecyclerView(){
         recyclerView = findViewById(R.id.rv_customer_map);
         adapter = new RecyclerView.Adapter<ConsumerMaps.ViewHolderRtCustomerMaps>() {
@@ -507,4 +445,6 @@ public class ConsumerMaps extends AppCompatActivity implements OnMapReadyCallbac
             return null;
         }
     }
+
+
 }
