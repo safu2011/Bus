@@ -48,6 +48,8 @@ public class AddDriverForAdminActivity extends AppCompatActivity implements View
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_driver_for_admin);
 
+
+
         etDriverId = findViewById(R.id.et_id_add_driver_admin);
         tvName = findViewById(R.id.tv_driver_name_add_driver_admin);
         tvNumber = findViewById(R.id.tv_driver_number_add_driver_admin);
